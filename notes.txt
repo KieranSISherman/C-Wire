@@ -1,0 +1,103 @@
+C17 standard:
+Types:
+- void
+- char
+- short
+- int
+- long
+- float
+- double
+- signed
+- unsigned
+- _Bool
+- _Complex
+- size_t
+- uint values
+User Types:
+- struct
+- union
+- enum
+- typedef
+Storage:
+- auto
+- static
+- extern
+- register
+- _Thread_local
+Qualifiers:
+- const
+- volatile
+- restrict
+- _Atomic
+Control flow:
+- if
+- else
+- switch
+- case
+- default
+- for
+- while
+- do
+- break
+- continue
+- goto
+- return
+Functions/Compilation:
+- inline
+- sizeof
+- _Alignof
+- _Alignas
+- _Generic
+- _Static_assert
+- _Noreturn
+Operators
+
+
+var modifiers:
+- pointer
+- const
+- auto
+- static
+- volatile
+- restrict
+- _Atomic
+- extern
+- register
+- _Thread_local
+- _Alignas -- works like a function? also has partner function _Alignof
+- setting var as array + setting array size/indexing an array
+
+function mods:
+- inline
+- _Noreturn
+- function pointers
+
+declartion mods:
+- typedef -- automatically typedef all user types for simplicity in frontend
+
+
+functions:
+- name
+- return type
+- return modifiers
+- parameters (a list of param structs)
+- is variadic
+
+parameters:
+- parameter name
+- parameter type
+- parameter modifiers
+
+Operators:
+- arithmetic: +, -, *, /, %
+- assignment: =, +=, -=, *=, /=, %=
+- comparison: ==, !=, <, >, <=, >=
+- logical: &&, ||, !
+- bitwise: &, |, ^, ~, <<, >>
+- other: ++, --, ?
+
+
+
+
+
+

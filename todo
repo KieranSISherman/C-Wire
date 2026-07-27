@@ -1,0 +1,28 @@
+Data Types:
+[ ] Create visual node
+- [ ] create wire drawing functionality
+	- [ ] make sure only the reference node can have more than one wire leaving.
+[ ] make sure all modifiers agree with other modifiers and their type
+[ ] Make sure name is not allowed if top connection is being used
+- [ ] Make sure reference wires, left, and right wires cannot be used
+[ ] Make sure values are not required if the top is NOT in use
+[ ] Show types on sidebar
+ - [ ] Keep track of previous state and go back to that after selecting a type
+- [ ] Save previously shown state to return after selecting a type
+[ ] Add types from imported files
+
+Functions:
+[ ] Create function struct
+ - [ ] have similar type and mod attributes to vars
+ - [ ] add pointer return type
+[ ] Create function list in app
+[ ] Add new function to the function list
+ - [ ] the function call block should allow this function as a call now
+ - [ ] when a function call block is placed and you click the selection box, show a list of all callable functions on the sidebar
+[ ] Add visual node
+[ ] Add + button to add as many params as wanted
+ - [ ] Figure out how to add variadic functions
+
+Wires:
+[ ] allow to be a pointer
+[ ] allow for type casting

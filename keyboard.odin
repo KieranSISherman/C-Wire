@@ -1,0 +1,84 @@
+package main
+
+import "core:fmt"
+import rl "vendor:raylib"
+import "core:unicode/utf8"
+
+Keyboard :: struct {
+	timeWait: i32,
+}
+
+keyboardEvents :: proc(app: ^App) {
+	databox: ^[dynamic]rune
+	if app.mouse.selected == nil {
+		if app.sidebar.show == true {
+			databox = &app.sidebar.createSearch
+		}
+		else {return}
+	}
+	else {databox = getDatabox(app.mouse.selected)}
+
+	if databox == nil {return}
+
+	key := rl.GetCharPressed()
+	for key != 0 {
+		append(databox, key)
+		key = rl.GetCharPressed()
+	}
+	if key == 0 && rl.IsKeyPressed(.BACKSPACE) && len(databox) > 0 {
+		pop(databox)
+	}
+	else if rl.IsKeyDown(.BACKSPACE) {
+		if app.keyboard.timeWait > 30 && len(databox) > 0 {
+			pop(databox)
+		}
+		else {
+			app.keyboard.timeWait += 1
+		}
+	}
+	else if rl.IsKeyPressed(.ENTER) {
+		if app.mouse.selected != nil && app.mouse.selected.nodeType == "new var" && app.mouse.selected.selectedEl == "varModSearch" {
+			node := app.mouse.selected
+			data := cast(^VarData)node.data
+			format := cast(^VarFormat)node.format
+			addVarMod(data, format)
+		}
+		else if app.mouse.selected == nil && app.sidebar.show == true {
+			nodeType: string = utf8.runes_to_string(app.sidebar.createSearch[:])
+			createNode(nodeType, app)//, app.sidebar.staticPos, app.nextId)
+			app.sidebar.show = false
+			clear(&app.sidebar.createSearch)
+		}
+	}
+	else if key == 0 && !rl.IsKeyDown(.BACKSPACE) {
+		app.keyboard.timeWait = 0
+	}
+}
+
+getDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
+	switch node.nodeType {
+	case "new var":
+		return getVarDatabox(node)
+	}
+	return nil
+}
+
+getVarDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
+	data := cast(^VarData)node.data
+	switch node.selectedEl {
+		case "varName":
+			return &data.name
+		case "varType":
+			return &data.type
+		case "varModSearch":
+			return &data.modSearch
+		case "varValue":
+			#partial switch &type in data.value {
+			case [dynamic]rune:
+				return &type
+			}
+		case "varArrayLen":
+			if data.isArray {return &data.arrayLen}
+	}
+	return nil
+}
