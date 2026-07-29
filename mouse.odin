@@ -182,8 +182,8 @@ getSelected :: proc(app: ^App) {
 }
 
 getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
-	switch node.nodeType {
-	case "new var":
+	#partial switch node.nodeType {
+	case .NEWVAR:
 		return getSelectedVarElement(node, mouse)
 	}
 	return "None"

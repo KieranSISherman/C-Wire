@@ -5,6 +5,21 @@ import "core:fmt"
 import "core:strings"
 import "core:unicode/utf8"
 
+/*
+   Helper Functions
+*/
+
+drawLabel :: proc(name: cstring, height: i32, pos: rl.Vector2) {
+    rl.DrawText(name, i32(pos.x)+15, i32(pos.y)+height, 17, {235,235,235,255})
+}
+
+drawDatabox :: proc(node: Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,255}) {
+    rl.DrawRectangleV(node.pos+{rec.x,rec.y}, {rec.width,rec.height}, color)
+}
+
+
+// Draw new var
+
 drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
     // Draw node
     rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
@@ -89,32 +104,15 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
     }
 }
 
-drawLabel :: proc(name: cstring, height: i32, pos: rl.Vector2) {
-    rl.DrawText(name, i32(pos.x)+15, i32(pos.y)+height, 17, {235,235,235,255})
-}
+// Draw binary op
+drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpFormat) {
+	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
+	drawDatabox(node, format.topConn, {90,90,90,255})
+    rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,140,0,255})
+    rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
+    rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4, 20}, {60,60,60,255})
+	//rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {60,60,60,255})
 
-drawDatabox :: proc(node: Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,255}) {
-    rl.DrawRectangleV(node.pos+{rec.x,rec.y}, {rec.width,rec.height}, color)
-}
-
-addVarMod :: proc(data: ^VarData, format: ^VarFormat) {//node: ^Node) {
-    search: string = utf8.runes_to_string(data.modSearch[:])
-    for selectedMod in varMods { // varMods from sidebar.odin
-        if string(selectedMod) == search {
-            if len(data.mods) != 0 {
-                data.newModPos += {data.mods[len(data.mods)-1].rec.width+10, 0}
-                if f32(rl.MeasureText(selectedMod, 17)) + data.newModPos.x >= format.mods.x + format.mods.width {
-                    data.newModPos.x = 20
-                    data.newModPos.y += 23
-                }
-            }
-            newMod: Mod = {
-                rec = {x=data.newModPos.x,y=data.newModPos.y,width=f32(rl.MeasureText(selectedMod, 17)),height=20},
-                text = selectedMod,
-            }
-            append(&data.mods, newMod)
-            clear(&data.modSearch)
-            return
-        }
-    }
+	drawLabel("Binary Operation", 10, node.pos)
+	drawLabel("Operation:", 55, node.pos)
 }

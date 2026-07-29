@@ -37,14 +37,17 @@ keyboardEvents :: proc(app: ^App) {
 		}
 	}
 	else if rl.IsKeyPressed(.ENTER) {
-		if app.mouse.selected != nil && app.mouse.selected.nodeType == "new var" && app.mouse.selected.selectedEl == "varModSearch" {
+		if app.mouse.selected != nil && app.mouse.selected.nodeType == .NEWVAR && app.mouse.selected.selectedEl == "varModSearch" {
 			node := app.mouse.selected
 			data := cast(^VarData)node.data
 			format := cast(^VarFormat)node.format
 			addVarMod(data, format)
 		}
 		else if app.mouse.selected == nil && app.sidebar.show == true {
-			nodeType: string = utf8.runes_to_string(app.sidebar.createSearch[:])
+			nodeString: = utf8.runes_to_string(app.sidebar.createSearch[:])
+			fmt.println("new = ", nodeString)
+			nodeType := stringToNodeType(nodeString)
+			fmt.println("new = ", nodeType)
 			createNode(nodeType, app)//, app.sidebar.staticPos, app.nextId)
 			app.sidebar.show = false
 			clear(&app.sidebar.createSearch)
@@ -57,13 +60,23 @@ keyboardEvents :: proc(app: ^App) {
 
 getDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
 	switch node.nodeType {
-	case "new var":
-		return getVarDatabox(node)
+	case .NEWVAR:
+		return getNewVarDatabox(node)
+	case .VAR:
+		return nil
+	case .INDEX:
+		return nil
+	case .UNARYOP:
+		return nil
+	case .BINARYOP:
+		return nil
+	case .TERNARYOP:
+		return nil
 	}
 	return nil
 }
 
-getVarDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
+getNewVarDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
 	data := cast(^VarData)node.data
 	switch node.selectedEl {
 		case "varName":

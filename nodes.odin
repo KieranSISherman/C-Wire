@@ -2,30 +2,12 @@ package main
 
 import rl "vendor:raylib"
 import "core:fmt"
+import "core:strings"
+import "core:unicode/utf8"
 
 /*
-freeNode :: proc(node: ^Node) {
-	delete(node.name)
-	delete(node.type)
-	delete(node.mods)
-	delete(node.modSearch)
-	delete(node.arrayLen)
-	#partial switch &value in node.value {
-	case [dynamic]rune:
-		delete(value)
-	}
-}
+   Node Definitions
 */
-
-Mod :: struct {
-	rec: rl.Rectangle,
-	text: cstring
-}
-
-DataValue :: union {
-	[dynamic]rune,
-	^Node,
-}
 
 NodeLayers :: struct {
 	top: [dynamic]Node,
@@ -34,23 +16,12 @@ NodeLayers :: struct {
 
 Node :: struct {
 	id: i32,
-	nodeType: string,
+	nodeType: NodeType,
 	topConn: ^Wire,
 	bottomConn: ^Wire,
 	leftConn: ^Wire,
 	nextConn: ^Wire,
 	referenceConn: ^Wire,
-	/*
-	name: [dynamic]rune,
-	type: [dynamic]rune,
-	mods: [dynamic]Mod,
-	modSearch: [dynamic]rune,
-	newModPos: rl.Vector2,
-	//isPointer: bool,
-	isArray: bool,
-	arrayLen: [dynamic]rune,
-	value: DataValue,
-	*/
 	data: rawptr,//DataUnion,
 	pos: rl.Vector2,
 	size: rl.Vector2,
@@ -58,16 +29,97 @@ Node :: struct {
 	selectedEl: string,
 }
 
-/*
-DataUnion :: union {
-	VarData,
-	BinaryOpData,
+NodeType :: enum {
+	NEWVAR,
+	VAR,
+	INDEX,
+	UNARYOP,
+	BINARYOP,
+	TERNARYOP,
+
 }
 
-FormatUnion :: union {
-	VarFormat,
-	BinaryOpFormat,
+stringToNodeType :: proc(type: string) -> NodeType {
+	/*
+	lower, err := strings.to_lower(type)
+	defer delete(lower)
+	if err == nil {
+		fmt.println("Err")
+		return nil
+	}
+	fmt.println(lower)
+	*/
+
+	switch type {
+		case "new var":
+			return .NEWVAR
+		case "var":
+			return .VAR
+		case "index":
+			return .INDEX
+		case "unary op":
+			return .UNARYOP
+		case "binary op":
+			return .BINARYOP
+		case "ternary op":
+			return .TERNARYOP
+	}
+	return nil
 }
+
+/*
+   Node creation
+*/
+
+drawNode :: proc(node: Node) {
+	switch node.nodeType {
+		case .NEWVAR:
+			data := cast(^VarData)node.data
+			format := cast(^VarFormat)node.format
+			drawNewVarNode(node, data, format)
+		case .VAR:
+			return
+		case .INDEX:
+			return
+		case .UNARYOP:
+			return
+		case .BINARYOP:
+			data := cast(^BinaryOpData)node.data
+			format := cast(^BinaryOpFormat)node.format
+			drawBinaryOpNode(node, data, format)
+		case .TERNARYOP:
+			return
+	}
+}
+
+
+createNode :: proc(nodeType: NodeType, app: ^App) {
+	/*
+	if nodeType == nil {
+		fmt.println("nil node")		
+		return
+	}
+	*/
+	switch nodeType {
+	case .NEWVAR:
+		createNewVar(app)
+	case .VAR:
+		return
+	case .INDEX:
+		return
+	case .UNARYOP:
+		return
+	case .BINARYOP:
+		createBinaryOp(app)
+	case .TERNARYOP:
+		return
+	case:
+		return
+	}
+}
+
+/*
+   New Variable
 */
 
 VarData :: struct {
@@ -79,6 +131,16 @@ VarData :: struct {
 	isArray: bool,
 	arrayLen: [dynamic]rune,
 	value: DataValue,
+}
+
+Mod :: struct {
+	rec: rl.Rectangle,
+	text: cstring
+}
+
+DataValue :: union {
+	[dynamic]rune,
+	^Node,
 }
 
 VarFormat :: struct {
@@ -96,14 +158,6 @@ VarFormat :: struct {
 	nextConn: rl.Rectangle,
 }
 
-BinaryOpData :: struct {
-
-}
-
-BinaryOpFormat :: struct {
-
-}
-
 initVarFormat :: proc() -> VarFormat {
 	return VarFormat {
 		name = {x=65,y=60,width=120,height=20},
@@ -118,15 +172,6 @@ initVarFormat :: proc() -> VarFormat {
 		bottomConn = {x=95,y=305,width=10,height=10},
 		rightConn = {x=195,y=170,width=10,height=10},
 		nextConn = {x=195,y=130,width=10,height=10},
-	}
-}
-
-
-
-createNode :: proc(nodeType: string, app: ^App) {
-	switch nodeType {
-	case "new var":
-		createNewVar(app)
 	}
 }
 
@@ -150,7 +195,7 @@ createNewVar :: proc(app: ^App) {
 	node: Node = {
 		id = Id,
 		pos = Pos,
-		nodeType = "new var",
+		nodeType = .NEWVAR,
 		size = {200,310},
 		selectedEl = "",
 		format = varFormat,
@@ -160,10 +205,92 @@ createNewVar :: proc(app: ^App) {
 	append(&app.nodes.bottom, node)
 }
 
+
+
+addVarMod :: proc(data: ^VarData, format: ^VarFormat) {//node: ^Node) {
+    search: string = utf8.runes_to_string(data.modSearch[:])
+    for selectedMod in varMods { // varMods from sidebar.odin
+        if string(selectedMod) == search {
+            if len(data.mods) != 0 {
+                data.newModPos += {data.mods[len(data.mods)-1].rec.width+10, 0}
+                if f32(rl.MeasureText(selectedMod, 17)) + data.newModPos.x >= format.mods.x + format.mods.width {
+                    data.newModPos.x = 20
+                    data.newModPos.y += 23
+                }
+            }
+            newMod: Mod = {
+                rec = {x=data.newModPos.x,y=data.newModPos.y,width=f32(rl.MeasureText(selectedMod, 17)),height=20},
+                text = selectedMod,
+            }
+            append(&data.mods, newMod)
+            clear(&data.modSearch)
+            return
+        }
+    }
+}
+
+/*
+   Unary Operator
+*/
+
+/*
+   Binary Operator
+*/
+
+BinaryOpData :: struct {
+	operation: [dynamic]rune,
+}
+
+BinaryOpFormat :: struct {
+	operation: rl.Rectangle,
+	topConn: rl.Rectangle,
+}
+
+initBinaryOpData :: proc() -> BinaryOpData {
+	return BinaryOpData {
+		operation = make([dynamic]rune)	
+	}
+}
+
+initBinaryOpFormat :: proc() -> BinaryOpFormat {
+	return BinaryOpFormat {
+		operation = {x=50,y=50,width=100,height=20},	
+		topConn = {x=95,y=-6,width=10,height=10},
+	}
+}
+
+createBinaryOp :: proc(app: ^App) {
+	Pos := app.sidebar.staticPos
+	Id := app.nextId
+
+	binOpData := new(BinaryOpData)
+	binOpData^ = initBinaryOpData()
+
+	binOpFormat := new(BinaryOpFormat)
+	binOpFormat^ = initBinaryOpFormat()
+	fmt.println(initBinaryOpFormat())
+
+	node: Node = {
+		id = Id,
+		pos = Pos,
+		nodeType = .BINARYOP,
+		size = {200,100},
+		selectedEl = "",
+		format = binOpFormat,
+		data = binOpData,
+	}
+	append(&app.nodes.bottom, node)
+}
+
+/*
+   Ternary Operator
+*/
+
 freeNode :: proc(node: ^Node) {
 	switch node.nodeType {
-	case "new var":
+	case .NEWVAR:
 		data := cast(^VarData)node.data
+		format := cast(^VarFormat)node.format
 		delete(data.name)
 		delete(data.type)
 		delete(data.mods)
@@ -173,7 +300,18 @@ freeNode :: proc(node: ^Node) {
 		case [dynamic]rune:
 			delete(value)
 		}
-		free(node.data)
-		free(node.format)
+	case .VAR:
+		return
+	case .INDEX:
+		return
+	case .UNARYOP:
+		return
+	case .BINARYOP:
+		data := cast(^BinaryOpData)node.data
+		delete(data.operation)
+	case .TERNARYOP:
+		return
 	}
+	free(node.data)
+	free(node.format)
 }

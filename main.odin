@@ -57,15 +57,6 @@ draw :: proc(app: ^App) {
 	rl.EndDrawing()
 }
 
-drawNode :: proc(node: Node) {
-	switch node.nodeType {
-		case "new var":
-			data := cast(^VarData)node.data
-			format := cast(^VarFormat)node.format
-			drawNewVarNode(node, data, format)
-	}
-}
-
 update :: proc(app: ^App) {
 	app.screen = {rl.GetScreenWidth(), rl.GetScreenHeight()}
 
