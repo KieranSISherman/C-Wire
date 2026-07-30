@@ -67,15 +67,15 @@ mouseEvents :: proc(app: ^App) {
 
 		if app.mouse.selected == nil {
 			pos := app.sidebar.staticPos
-			width := f32(app.sidebar.sidebarWidth)
-			height := f32(app.sidebar.sidebarHeight)
+			width := f32(app.sidebar.width)
+			height := f32(app.sidebar.height)
 			sidebarRec = {pos.x, pos.y, width, height}
 		}
 		else {
 			sidebarX := selected.pos.x + selected.size.x + 5
 			selY := selected.pos.y
-			sideW := f32(app.sidebar.sidebarWidth)
-			selH := selected.size.y
+			sideW := f32(app.sidebar.width)
+			selH := f32(app.sidebar.height)
 			sidebarRec = {sidebarX, selY, sideW, selH}
 		}
 
@@ -107,6 +107,7 @@ clickUpdate :: proc(app: ^App) {
 	app.sidebar.show = false
 
 	switch node.selectedEl {
+	// Var
 		case "varType":
 			app.sidebar.show = true
 			app.sidebar.scrollOffset = 0
@@ -122,20 +123,19 @@ clickUpdate :: proc(app: ^App) {
 			data := cast(^VarData)node.data
 			data.isArray = !data.isArray
 			return
-		/*
-		case "arrayLen":
-			return
-		case "topConn":
-			return
-		case "leftConn":
-			return
-		case "bottomConn":
-			return
-		case "rightConn":
-			return
-		case "nextConn":
-			return
-		*/
+
+		// Unary Op
+		case "unOp":
+			app.sidebar.show = true
+			app.sidebar.scrollOffset = 0
+			app.sidebar.display = "unOp"
+
+		// Binary Op
+		case "binOp":
+			app.sidebar.show = true
+			app.sidebar.scrollOffset = 0
+			app.sidebar.display = "binOp"
+		
 	}
 }
 
@@ -185,6 +185,10 @@ getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	#partial switch node.nodeType {
 	case .NEWVAR:
 		return getSelectedVarElement(node, mouse)
+	case .UNARYOP:
+		return getSelectedUnaryOpElement(node, mouse)
+	case .BINARYOP:
+		return getSelectedBinaryOpElement(node, mouse)
 	}
 	return "None"
 }
@@ -205,6 +209,21 @@ getSelectedVarElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.bottomConn, mouse) {return "varBottomConn"}
 	if inElement(node.pos, format.rightConn, mouse) {return "varRightConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "varNextConn"}
+	return "None"
+}
+
+getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
+	format := cast(^UnaryOpFormat)node.format
+	if inElement(node.pos, format.operation, mouse) {return "unOp"}
+	if inElement(node.pos, format.topConn, mouse) {return "unTopConn"}
+	return "None"
+}
+
+getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
+	format := cast(^BinaryOpFormat)node.format
+	if inElement(node.pos, format.operation, mouse) {return "binOp"}
+	if inElement(node.pos, format.topConn, mouse) {return "binTopConn"}
+
 	return "None"
 }
 

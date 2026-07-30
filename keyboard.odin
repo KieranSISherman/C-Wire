@@ -60,6 +60,7 @@ keyboardEvents :: proc(app: ^App) {
 
 getDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
 	switch node.nodeType {
+	case .NONE: return nil
 	case .NEWVAR:
 		return getNewVarDatabox(node)
 	case .VAR:
@@ -67,9 +68,9 @@ getDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
 	case .INDEX:
 		return nil
 	case .UNARYOP:
-		return nil
+		return getUnOpDatabox(node)
 	case .BINARYOP:
-		return nil
+		return getBinOpDatabox(node)
 	case .TERNARYOP:
 		return nil
 	}
@@ -92,6 +93,22 @@ getNewVarDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
 			}
 		case "varArrayLen":
 			if data.isArray {return &data.arrayLen}
+	}
+	return nil
+}
+
+getUnOpDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
+	data := cast(^UnaryOpData)node.data
+	if node.selectedEl == "unOp" {
+		return &data.operation
+	}
+	return nil
+}
+
+getBinOpDatabox :: proc(node: ^Node) -> ^[dynamic]rune {
+	data := cast(^BinaryOpData)node.data
+	if node.selectedEl == "binOp" {
+		return &data.operation
 	}
 	return nil
 }

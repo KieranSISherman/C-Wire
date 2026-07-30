@@ -37,8 +37,8 @@ Sidebar :: struct {
 	show: bool,
 	display: string,
 	search: string,
-	sidebarWidth: i32,
-	sidebarHeight: i32,
+	width: i32,
+	height: i32,
 	scrollOffset: i32,
 	maxScroll: i32,
 	createSearch: [dynamic]rune,
@@ -57,18 +57,18 @@ drawSidebar :: proc(app: ^App) {
 	sidebarX := i32(app.mouse.selected.pos.x + app.mouse.selected.size.x + 5)
 	//sidebarWidth: i32 = 175
 	node := app.mouse.selected
-	sidebarWidth := app.sidebar.sidebarWidth
+	sidebar := app.sidebar
 
 	app.sidebar.camera.offset = {f32(sidebarX), f32(node.pos.y)}
 
-	rl.BeginScissorMode(sidebarX, i32(node.pos.y), sidebarWidth, i32(node.size.y))
+	rl.BeginScissorMode(sidebarX, i32(node.pos.y), sidebar.width, sidebar.height)
 	rl.BeginMode2D(app.sidebar.camera)
 
 	rl.ClearBackground({40,40,40,255})
-	rl.DrawRectangleRounded({0,0,f32(sidebarWidth),node.size.y}, 0.2, 1, {90,90,90,255})
-	rl.DrawRectangleRounded({2,2,f32(sidebarWidth)-4,node.size.y-4}, 0.2, 1, {60,60,60,255})
+	rl.DrawRectangleRounded({0,0,f32(sidebar.width),f32(sidebar.height)}, 0.2, 1, {90,90,90,255})
+	rl.DrawRectangleRounded({2,2,f32(sidebar.width)-4,f32(sidebar.height)-4}, 0.2, 1, {60,60,60,255})
 
-	rl.BeginScissorMode(sidebarX+5, i32(node.pos.y)+5, sidebarWidth-10, i32(node.size.y)-10)
+	rl.BeginScissorMode(sidebarX+5, i32(node.pos.y)+5, sidebar.width-10, sidebar.height-10)
 	drawSidebarContent(app)
 	rl.EndScissorMode()
 
@@ -79,10 +79,19 @@ drawSidebar :: proc(app: ^App) {
 drawSidebarContent :: proc(app: ^App) {
 	app := app
 	switch app.sidebar.display {
+		// Var
 		case "varType":
 			drawVarTypes(app)
 		case "varMods":
 			drawVarMods(app)
+
+		// Unary ops
+		case "unOp":
+			drawUnOps(app)
+		
+		// Binary Ops
+		case "binOp":
+			drawBinOps(app)
 	}
 }
 
@@ -94,8 +103,8 @@ drawCreateNodes :: proc(app: ^App) {
 	}
 	else {pos = app.sidebar.staticPos}
 
-	width := app.sidebar.sidebarWidth
-	height := app.sidebar.sidebarHeight
+	width := app.sidebar.width
+	height := app.sidebar.height
 	search: cstring = strings.clone_to_cstring(utf8.runes_to_string(app.sidebar.createSearch[:]))
 	defer delete(search)
 
@@ -142,7 +151,8 @@ drawVarTypes :: proc(app: ^App) {
 	sidebar := app.sidebar
 	data := cast(^VarData)app.mouse.selected.data
 	search: string = utf8.runes_to_string(data.type[:])
-	sidebarHeight: i32 = i32(app.mouse.selected.size.y-10)
+	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+
 	
 	/*
 	if search != "" {
@@ -155,7 +165,7 @@ drawVarTypes :: proc(app: ^App) {
 	drawPos += {0, 25}
 	for type in builtinTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 	
@@ -164,7 +174,7 @@ drawVarTypes :: proc(app: ^App) {
 	drawPos += {0, 25}
 	for type in userVarTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
@@ -173,11 +183,11 @@ drawVarTypes :: proc(app: ^App) {
 	drawPos += {0, 25}
 	for type in importedTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
-	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - sidebarHeight)*-1
+	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - scrollHeight)*-1
 	//fmt.println(sidebar.maxScroll)
 }
 
@@ -195,4 +205,112 @@ drawVarMods :: proc(app: ^App) {
 		drawPos += {0, 23}
 	}
 	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - sidebarHeight)*-1
+}
+
+drawUnOps :: proc(app: ^App) {
+	if app.mouse.selected == nil {return}
+	sidebar := app.sidebar
+	data := cast(^UnaryOpData)app.mouse.selected.data
+	search: string = utf8.runes_to_string(data.operation[:])
+	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+	
+	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
+	rl.DrawText("Unary Mutation", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in unaryMutation {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Unary Logic", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in unaryLogic {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0,23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Unary Pointers", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in unaryPointers {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0,24}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Unary Bitwise", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,225})
+	drawPos += {0, 25}
+	for op in unaryBitwise {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0,23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Compile Time", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in unaryCompileTime {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0,23}
+	}
+	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - scrollHeight)*-1
+}
+
+drawBinOps :: proc(app: ^App) {
+	if app.mouse.selected == nil {return}
+	sidebar := app.sidebar
+	data := cast(^BinaryOpData)app.mouse.selected.data
+	search: string = utf8.runes_to_string(data.operation[:])
+	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+
+	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
+	rl.DrawText("Assignment Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in assignOps {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Comparison Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in compOps {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Logic Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in logicOps {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Arithmetic Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in arithOps {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+
+	drawPos += {0, 25}
+	rl.DrawText("Bitwise Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	drawPos += {0, 25}
+	for op in bitwiseOps {
+		if search != "" && !strings.contains(string(op), search) {continue}
+		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		drawPos += {0, 23}
+	}
+	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - scrollHeight)*-1
 }

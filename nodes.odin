@@ -30,6 +30,7 @@ Node :: struct {
 }
 
 NodeType :: enum {
+	NONE,
 	NEWVAR,
 	VAR,
 	INDEX,
@@ -63,8 +64,10 @@ stringToNodeType :: proc(type: string) -> NodeType {
 			return .BINARYOP
 		case "ternary op":
 			return .TERNARYOP
+		case:
+			return .NONE
 	}
-	return nil
+	return .NONE
 }
 
 /*
@@ -73,6 +76,7 @@ stringToNodeType :: proc(type: string) -> NodeType {
 
 drawNode :: proc(node: Node) {
 	switch node.nodeType {
+		case .NONE: return
 		case .NEWVAR:
 			data := cast(^VarData)node.data
 			format := cast(^VarFormat)node.format
@@ -82,7 +86,9 @@ drawNode :: proc(node: Node) {
 		case .INDEX:
 			return
 		case .UNARYOP:
-			return
+			data := cast(^UnaryOpData)node.data
+			format := cast(^UnaryOpFormat)node.format
+			drawUnaryOpNode(node, data, format)
 		case .BINARYOP:
 			data := cast(^BinaryOpData)node.data
 			format := cast(^BinaryOpFormat)node.format
@@ -101,6 +107,7 @@ createNode :: proc(nodeType: NodeType, app: ^App) {
 	}
 	*/
 	switch nodeType {
+	case .NONE: return
 	case .NEWVAR:
 		createNewVar(app)
 	case .VAR:
@@ -108,7 +115,7 @@ createNode :: proc(nodeType: NodeType, app: ^App) {
 	case .INDEX:
 		return
 	case .UNARYOP:
-		return
+		createUnaryOp(app)
 	case .BINARYOP:
 		createBinaryOp(app)
 	case .TERNARYOP:
@@ -233,6 +240,50 @@ addVarMod :: proc(data: ^VarData, format: ^VarFormat) {//node: ^Node) {
    Unary Operator
 */
 
+UnaryOpData :: struct {
+	operation: [dynamic]rune,
+}
+
+UnaryOpFormat :: struct {
+	operation: rl.Rectangle,
+	topConn: rl.Rectangle,
+}
+
+initUnaryOpData :: proc() -> UnaryOpData {
+	return UnaryOpData {
+		operation = make([dynamic]rune)
+	}
+}
+
+initUnaryOpFormat :: proc() -> UnaryOpFormat {
+	return UnaryOpFormat {
+		operation = {x=100,y=55,width=90,height=20},
+		topConn = {x=95,y=-6,width=10,height=10}
+	}
+}
+
+createUnaryOp :: proc(app: ^App) {
+	Pos := app.sidebar.staticPos
+	Id := app.nextId
+
+	unaryOpData := new(UnaryOpData)
+	unaryOpData^ = initUnaryOpData()
+
+	unaryOpFormat := new(UnaryOpFormat)
+	unaryOpFormat^ = initUnaryOpFormat()
+
+	node: Node = {
+		id = Id,
+		pos = Pos,
+		nodeType = .UNARYOP,
+		size = {200,100},
+		selectedEl = "",
+		format = unaryOpFormat,
+		data = unaryOpData,
+	}
+	append(&app.nodes.bottom, node)
+}
+
 /*
    Binary Operator
 */
@@ -254,7 +305,7 @@ initBinaryOpData :: proc() -> BinaryOpData {
 
 initBinaryOpFormat :: proc() -> BinaryOpFormat {
 	return BinaryOpFormat {
-		operation = {x=50,y=50,width=100,height=20},	
+		operation = {x=100,y=55,width=90,height=20},	
 		topConn = {x=95,y=-6,width=10,height=10},
 	}
 }
@@ -268,7 +319,6 @@ createBinaryOp :: proc(app: ^App) {
 
 	binOpFormat := new(BinaryOpFormat)
 	binOpFormat^ = initBinaryOpFormat()
-	fmt.println(initBinaryOpFormat())
 
 	node: Node = {
 		id = Id,
@@ -286,8 +336,18 @@ createBinaryOp :: proc(app: ^App) {
    Ternary Operator
 */
 
+TernaryOpFormat :: struct {
+	
+}
+
+
+/*
+   Free Memory
+*/
+
 freeNode :: proc(node: ^Node) {
 	switch node.nodeType {
+	case .NONE: return
 	case .NEWVAR:
 		data := cast(^VarData)node.data
 		format := cast(^VarFormat)node.format
