@@ -169,8 +169,8 @@ initVarFormat :: proc() -> VarFormat {
 	return VarFormat {
 		name = {x=65,y=60,width=120,height=20},
 		type = {x=65,y=90,width=120,height=20},
-		value = {x=65,y=120,width=120,height=20},
-		array = {x=100,y=150,width=20,height=20},
+		value = {x=75,y=120,width=110,height=20},
+		array = {x=105,y=150,width=20,height=20},
 		arrayLen = {x=130,y=150,width=55,height=20},
 		mods = {x=15,y=210,width=170,height=80},
 		modSearch = {x=65,y=180,width=120,height=20},
@@ -257,7 +257,7 @@ initUnaryOpData :: proc() -> UnaryOpData {
 
 initUnaryOpFormat :: proc() -> UnaryOpFormat {
 	return UnaryOpFormat {
-		operation = {x=100,y=55,width=90,height=20},
+		operation = {x=110,y=55,width=80,height=20},
 		topConn = {x=95,y=-6,width=10,height=10}
 	}
 }
@@ -305,7 +305,7 @@ initBinaryOpData :: proc() -> BinaryOpData {
 
 initBinaryOpFormat :: proc() -> BinaryOpFormat {
 	return BinaryOpFormat {
-		operation = {x=100,y=55,width=90,height=20},	
+		operation = {x=110,y=55,width=80,height=20},	
 		topConn = {x=95,y=-6,width=10,height=10},
 	}
 }
@@ -365,7 +365,8 @@ freeNode :: proc(node: ^Node) {
 	case .INDEX:
 		return
 	case .UNARYOP:
-		return
+		data := cast(^UnaryOpData)node.data
+		delete(data.operation)
 	case .BINARYOP:
 		data := cast(^BinaryOpData)node.data
 		delete(data.operation)

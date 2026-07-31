@@ -21,6 +21,8 @@ App :: struct {
 	keyboard: Keyboard,
 }
 
+font: rl.Font
+
 /*
 drawSidebar :: proc(app: ^App) {
 	if app.mouse.selected == nil {return}
@@ -69,6 +71,8 @@ main :: proc() {
 	rl.InitWindow(1280, 720, "C-Wire")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
+	font = rl.LoadFontEx("assets/fonts/mplus-1m-medium.ttf", 32, nil, 0)
+	defer rl.UnloadFont(font)
 
 	app := App {
 		screen = {1280, 720},

@@ -117,26 +117,27 @@ drawCreateNodes :: proc(app: ^App) {
 	rl.DrawRectangleRounded({2,2,f32(width-4),346}, 0.2, 1, {60,60,60,255})
 	rl.DrawRectangle(8, 20, width-16, 25, {80,80,80,255})
 
-	rl.DrawText(search, 13, 25, 19, {235,235,235,255})
+	spacing: f32 = 1
+	rl.DrawTextEx(font, search, {13, 25}, 19, spacing, {235,235,235,255})
 
 	rl.BeginScissorMode(i32(pos.x+5), i32(pos.y+50), width-10, height-10)
 
 	// Draw Content
 	drawPos: rl.Vector2 = {10, 55+f32(app.sidebar.scrollOffset)}
-	rl.DrawText("Variables", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Variables", {drawPos.x, drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0,25}
 	for node in variableNodes {
 		if search != "" && !strings.contains(string(node), string(search)) {continue}
-		rl.DrawText(node, i32(drawPos.x+10), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, node, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,23}
 	}
 
 	drawPos += {0,25}
-	rl.DrawText("Operators", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Operators", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0,25}
 	for node in operatorNodes {
 		if search != "" && !strings.contains(string(node), string(search)) {continue}
-		rl.DrawText(node, i32(drawPos.x+10), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, node, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,23}
 	}
 
@@ -160,30 +161,31 @@ drawVarTypes :: proc(app: ^App) {
 	}
 	*/
 
+	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
-	rl.DrawText("Built-in Types", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Built-in Types", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for type in builtinTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, type, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 	
 	drawPos += {0, 25}
-	rl.DrawText("User Types", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "User Types", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for type in userVarTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, type, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Imported Types", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Imported Types", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for type in importedTypes {
 		if search != "" && !strings.contains(string(type), search) {continue}
-		rl.DrawText(type, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, type, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
@@ -198,10 +200,11 @@ drawVarMods :: proc(app: ^App) {
 	search: string = utf8.runes_to_string(data.modSearch[:])
 	sidebarHeight: i32 = i32(app.mouse.selected.size.y-10)
 
+	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
 	for mod in varMods {
 		if search != "" && !strings.contains(string(mod), search) {continue}
-		rl.DrawText(mod, i32(drawPos.x), i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, mod, {drawPos.x,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - sidebarHeight)*-1
@@ -214,48 +217,49 @@ drawUnOps :: proc(app: ^App) {
 	search: string = utf8.runes_to_string(data.operation[:])
 	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
 	
+	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
-	rl.DrawText("Unary Mutation", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Unary Mutation", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in unaryMutation {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Unary Logic", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Unary Logic", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in unaryLogic {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Unary Pointers", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Unary Pointers", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in unaryPointers {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,24}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Unary Bitwise", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,225})
+	rl.DrawTextEx(font, "Unary Bitwise", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,225})
 	drawPos += {0, 25}
 	for op in unaryBitwise {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Compile Time", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Compile Time", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in unaryCompileTime {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10, drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0,23}
 	}
 	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - scrollHeight)*-1
@@ -268,48 +272,49 @@ drawBinOps :: proc(app: ^App) {
 	search: string = utf8.runes_to_string(data.operation[:])
 	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
 
+	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
-	rl.DrawText("Assignment Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Assignment Ops", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in assignOps {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Comparison Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Comparison Ops", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in compOps {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Logic Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Logic Ops", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in logicOps {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Arithmetic Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Arithmetic Ops", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in arithOps {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 
 	drawPos += {0, 25}
-	rl.DrawText("Bitwise Ops", i32(drawPos.x), i32(drawPos.y), 19, {235,235,235,255})
+	rl.DrawTextEx(font, "Bitwise Ops", {drawPos.x,drawPos.y}, 19, spacing, {235,235,235,255})
 	drawPos += {0, 25}
 	for op in bitwiseOps {
 		if search != "" && !strings.contains(string(op), search) {continue}
-		rl.DrawText(op, i32(drawPos.x)+10, i32(drawPos.y), 17, {235,235,235,255})
+		rl.DrawTextEx(font, op, {drawPos.x+10,drawPos.y}, 17, spacing, {235,235,235,255})
 		drawPos += {0, 23}
 	}
 	sidebar.maxScroll = (i32(drawPos.y) - sidebar.scrollOffset - scrollHeight)*-1
