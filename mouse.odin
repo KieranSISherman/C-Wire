@@ -207,8 +207,9 @@ getSelectedVarElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.topConn, mouse) {return "varTopConn"}
 	if inElement(node.pos, format.leftConn, mouse) {return "varLeftConn"}
 	if inElement(node.pos, format.bottomConn, mouse) {return "varBottomConn"}
-	if inElement(node.pos, format.rightConn, mouse) {return "varRightConn"}
+	//if inElement(node.pos, format.rightConn, mouse) {return "varRightConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "varNextConn"}
+
 	return "None"
 }
 
@@ -216,6 +217,10 @@ getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	format := cast(^UnaryOpFormat)node.format
 	if inElement(node.pos, format.operation, mouse) {return "unOp"}
 	if inElement(node.pos, format.topConn, mouse) {return "unTopConn"}
+	if inElement(node.pos, format.leftConn, mouse) {return "unLeftConn"}
+	if inElement(node.pos, format.bottomConn, mouse) {return "unBottomConn"}
+	if inElement(node.pos, format.nextConn, mouse) {return "unNextConn"}
+
 	return "None"
 }
 
@@ -223,6 +228,10 @@ getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	format := cast(^BinaryOpFormat)node.format
 	if inElement(node.pos, format.operation, mouse) {return "binOp"}
 	if inElement(node.pos, format.topConn, mouse) {return "binTopConn"}
+	if inElement(node.pos, format.leftConn, mouse) {return "binLeftConn"}
+	if inElement(node.pos, format.botLeftConn, mouse) {return "binBotLeftConn"}
+	if inElement(node.pos, format.botRightConn, mouse) {return "binBotRightConn"}
+	if inElement(node.pos, format.nextConn, mouse) {return "binNextConn"}
 
 	return "None"
 }

@@ -94,9 +94,9 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
 
     // Draw Node Connectors
     //drawDatabox(node, node.format.topConn, {90,90,90,255})
-    drawDatabox(node, format.leftConn, {90,90,90,255})
+    drawDatabox(node, format.leftConn, rl.GREEN)
     drawDatabox(node, format.bottomConn, {90,90,90,255})
-    drawDatabox(node, format.rightConn, {90,90,90,255})
+    //drawDatabox(node, format.rightConn, {90,90,90,255})
     drawDatabox(node, format.nextConn, rl.GREEN)
     top := format.topConn
     drawDatabox(node, top, {90,90,90,255})
@@ -120,6 +120,10 @@ drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) 
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
     rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4, 20}, {60,60,60,255})
 
+	drawDatabox(node, format.leftConn, rl.GREEN)
+	drawDatabox(node, format.bottomConn, {90,90,90,255})
+	drawDatabox(node, format.nextConn, rl.GREEN)
+
 	if node.selectedEl == "unOp" {drawDatabox(node, format.operation, {100,100,100,255})}
 	else {drawDatabox(node, format.operation)}
 
@@ -139,6 +143,11 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,100,0,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
     rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4, 20}, {60,60,60,255})
+
+	drawDatabox(node, format.leftConn, rl.GREEN) 
+	drawDatabox(node, format.botLeftConn, {90,90,90,255})
+	drawDatabox(node, format.botRightConn, {90,90,90,255})
+	drawDatabox(node, format.nextConn, rl.GREEN)
 
 	if node.selectedEl == "binOp" {drawDatabox(node, format.operation, {100,100,100,255})}
 	else {drawDatabox(node, format.operation)}

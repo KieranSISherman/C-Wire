@@ -161,7 +161,7 @@ VarFormat :: struct {
 	topConn: rl.Rectangle,
 	leftConn: rl.Rectangle,
 	bottomConn: rl.Rectangle,
-	rightConn: rl.Rectangle,
+	//rightConn: rl.Rectangle,
 	nextConn: rl.Rectangle,
 }
 
@@ -177,8 +177,9 @@ initVarFormat :: proc() -> VarFormat {
 		topConn = {x=95,y=-6,width=10,height=10},
 		leftConn = {x=-3,y=150,width=10,height=10},
 		bottomConn = {x=95,y=305,width=10,height=10},
-		rightConn = {x=195,y=170,width=10,height=10},
-		nextConn = {x=195,y=130,width=10,height=10},
+		nextConn = {x=195,y=150,width=10,height=10},
+		//rightConn = {x=195,y=170,width=10,height=10},
+		//nextConn = {x=195,y=130,width=10,height=10},
 	}
 }
 
@@ -247,6 +248,9 @@ UnaryOpData :: struct {
 UnaryOpFormat :: struct {
 	operation: rl.Rectangle,
 	topConn: rl.Rectangle,
+	leftConn: rl.Rectangle,
+	bottomConn: rl.Rectangle,
+	nextConn: rl.Rectangle,
 }
 
 initUnaryOpData :: proc() -> UnaryOpData {
@@ -258,7 +262,10 @@ initUnaryOpData :: proc() -> UnaryOpData {
 initUnaryOpFormat :: proc() -> UnaryOpFormat {
 	return UnaryOpFormat {
 		operation = {x=110,y=55,width=80,height=20},
-		topConn = {x=95,y=-6,width=10,height=10}
+		topConn = {x=95,y=-6,width=10,height=10},
+		leftConn = {x=-3,y=58,width=10,height=10},
+		bottomConn = {x=95,y=95,width=10,height=10},
+		nextConn = {x=195,y=60,width=10,height=10},
 	}
 }
 
@@ -295,6 +302,10 @@ BinaryOpData :: struct {
 BinaryOpFormat :: struct {
 	operation: rl.Rectangle,
 	topConn: rl.Rectangle,
+	leftConn: rl.Rectangle,
+	botLeftConn: rl.Rectangle,
+	botRightConn: rl.Rectangle,
+	nextConn: rl.Rectangle,
 }
 
 initBinaryOpData :: proc() -> BinaryOpData {
@@ -307,6 +318,10 @@ initBinaryOpFormat :: proc() -> BinaryOpFormat {
 	return BinaryOpFormat {
 		operation = {x=110,y=55,width=80,height=20},	
 		topConn = {x=95,y=-6,width=10,height=10},
+		leftConn = {x=-3,y=58,width=10,height=10},
+		botLeftConn = {x=60,y=95,width=10,height=10},
+		botRightConn = {x=130,y=95,width=10,height=10},
+		nextConn = {x=195,y=60,width=10,height=10},
 	}
 }
 
