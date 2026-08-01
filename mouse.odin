@@ -189,6 +189,8 @@ getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 		return getSelectedUnaryOpElement(node, mouse)
 	case .BINARYOP:
 		return getSelectedBinaryOpElement(node, mouse)
+	case .TERNARYOP:
+		return getSelectedTernaryOpElement(node, mouse)
 	}
 	return "None"
 }
@@ -232,6 +234,18 @@ getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.botLeftConn, mouse) {return "binBotLeftConn"}
 	if inElement(node.pos, format.botRightConn, mouse) {return "binBotRightConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "binNextConn"}
+
+	return "None"
+}
+
+getSelectedTernaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
+	format := cast(^TernaryOpFormat)node.format
+	if inElement(node.pos, format.topConn, mouse) {return "ternTopConn"}
+	if inElement(node.pos, format.leftConn, mouse) {return "ternLeftConn"}
+	if inElement(node.pos, format.nextConn, mouse) {return "ternNextConn"}
+	if inElement(node.pos, format.condConn, mouse) {return "ternCondConn"}
+	if inElement(node.pos, format.expr1Conn, mouse) {return "ternExpr1Conn"}
+	if inElement(node.pos, format.expr2Conn, mouse) {return "ternExpr2Conn"}
 
 	return "None"
 }

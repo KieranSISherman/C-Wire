@@ -17,11 +17,13 @@ NodeLayers :: struct {
 Node :: struct {
 	id: i32,
 	nodeType: NodeType,
+	/*
 	topConn: ^Wire,
 	bottomConn: ^Wire,
 	leftConn: ^Wire,
 	nextConn: ^Wire,
 	referenceConn: ^Wire,
+	*/
 	data: rawptr,//DataUnion,
 	pos: rl.Vector2,
 	size: rl.Vector2,
@@ -94,7 +96,9 @@ drawNode :: proc(node: Node) {
 			format := cast(^BinaryOpFormat)node.format
 			drawBinaryOpNode(node, data, format)
 		case .TERNARYOP:
-			return
+			data := cast(^TernaryOpData)node.data
+			format := cast(^TernaryOpFormat)node.format
+			drawTernaryOpNode(node, data, format)
 	}
 }
 
@@ -119,7 +123,7 @@ createNode :: proc(nodeType: NodeType, app: ^App) {
 	case .BINARYOP:
 		createBinaryOp(app)
 	case .TERNARYOP:
-		return
+		createTernaryOp(app)
 	case:
 		return
 	}
@@ -351,10 +355,67 @@ createBinaryOp :: proc(app: ^App) {
    Ternary Operator
 */
 
-TernaryOpFormat :: struct {
-	
+TernaryOpData :: struct {
+	topConn: ^Wire,
+	leftConn: ^Wire,
+	nextConn: ^Wire,
+	condConn: ^Wire,
+	expr1Conn: ^Wire,
+	expr2Conn: ^Wire,
 }
 
+TernaryOpFormat :: struct {
+	topConn: rl.Rectangle,
+	leftConn: rl.Rectangle,
+	nextConn: rl.Rectangle,
+	condConn: rl.Rectangle,
+	expr1Conn: rl.Rectangle,
+	expr2Conn: rl.Rectangle,
+}
+
+initTernaryOpData :: proc() -> TernaryOpData {
+	return TernaryOpData {
+		topConn = nil,
+		leftConn = nil,
+		nextConn = nil,
+		condConn = nil,
+		expr1Conn = nil,
+		expr2Conn = nil,
+	}
+}
+
+initTernaryOpFormat :: proc() -> TernaryOpFormat {
+	return TernaryOpFormat {
+		topConn = {x=95,y=-6,width=10,height=10},
+		leftConn = {x=-3,y=58,width=10,height=10},
+		nextConn = {x=195,y=60,width=10,height=10},
+		condConn = {x=50,y=95,width=10,height=10},
+		expr1Conn = {x=100,y=95,width=10,height=10},
+		expr2Conn = {x=150,y=95,width=10,height=10},
+	}
+}
+
+createTernaryOp :: proc(app: ^App) {
+	Pos := app.sidebar.staticPos
+	Id := app.nextId
+
+	ternOpData := new(TernaryOpData)
+	ternOpData^ = initTernaryOpData()
+
+	ternOpFormat := new(TernaryOpFormat)
+	ternOpFormat^ = initTernaryOpFormat()
+
+	node: Node = {
+		id = Id,
+		pos = Pos,
+		nodeType = .TERNARYOP,
+		size = {200,100},
+		selectedEl = "",
+		format = ternOpFormat,
+		data = ternOpData,
+	}
+	append(&app.nodes.bottom, node)
+}
 
 /*
    Free Memory
@@ -386,7 +447,7 @@ freeNode :: proc(node: ^Node) {
 		data := cast(^BinaryOpData)node.data
 		delete(data.operation)
 	case .TERNARYOP:
-		return
+		break
 	}
 	free(node.data)
 	free(node.format)

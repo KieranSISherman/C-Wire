@@ -161,3 +161,21 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
 	drawLabel("Operation:", 55, node.pos)
 }
 
+
+// Draw ternary op
+drawTernaryOpNode :: proc(node: Node, data: ^TernaryOpData, format: ^TernaryOpFormat) {
+	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
+	drawDatabox(node, format.topConn, {90,90,90,255})
+	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,60,0,255})
+	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
+	rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4,20}, {60,60,60,255})
+
+	drawDatabox(node, format.leftConn, rl.GREEN)
+	drawDatabox(node, format.nextConn, rl.GREEN)
+	drawDatabox(node, format.condConn, {90,90,90,255})
+	drawDatabox(node, format.expr1Conn, {90,90,90,255})
+	drawDatabox(node, format.expr2Conn, {90,90,90,255})
+
+	drawLabel("Ternary Operatoin", 10, node.pos)
+	drawLabel("Operation: ?", 55, node.pos)
+}
