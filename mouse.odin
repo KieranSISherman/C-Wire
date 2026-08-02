@@ -146,10 +146,10 @@ getSelected :: proc(app: ^App) {
 		node := &app.nodes.top[i]
 
 		rect: rl.Rectangle = {
-			x = node.pos.x,
-			y = node.pos.y,
-			width = node.size.x,
-			height = node.size.y
+			x = node.pos.x-5,
+			y = node.pos.y-5,
+			width = node.size.x+10,
+			height = node.size.y+10
 		}
 
 		if rl.CheckCollisionPointRec(mouse, rect) {
@@ -162,10 +162,10 @@ getSelected :: proc(app: ^App) {
 		node := &app.nodes.bottom[i]
 
 		rect: rl.Rectangle = {
-			x = node.pos.x,
-			y = node.pos.y,
-			width = node.size.x,
-			height = node.size.y
+			x = node.pos.x-5,
+			y = node.pos.y-5,
+			width = node.size.x+10,
+			height = node.size.y+10
 		}
 
 		if rl.CheckCollisionPointRec(mouse, rect) {
@@ -190,7 +190,8 @@ getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	case .BINARYOP:
 		return getSelectedBinaryOpElement(node, mouse)
 	case .TERNARYOP:
-		return getSelectedTernaryOpElement(node, mouse)
+		//return getSelectedTernaryOpElement(node, mouse)
+		return inConnElement(node.pos, node.conns, mouse)
 	}
 	return "None"
 }
@@ -206,13 +207,16 @@ getSelectedVarElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.array, mouse) {return "varArray"}
 
 	if inElement(node.pos, format.arrayLen, mouse) {return "varArrayLen"}
+	/*
 	if inElement(node.pos, format.topConn, mouse) {return "varTopConn"}
 	if inElement(node.pos, format.leftConn, mouse) {return "varLeftConn"}
 	if inElement(node.pos, format.bottomConn, mouse) {return "varBottomConn"}
 	//if inElement(node.pos, format.rightConn, mouse) {return "varRightConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "varNextConn"}
+	*/
+	return inConnElement(node.pos, node.conns, mouse) // defaults to "None"
 
-	return "None"
+	//return "None"
 }
 
 getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
@@ -229,15 +233,17 @@ getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	format := cast(^BinaryOpFormat)node.format
 	if inElement(node.pos, format.operation, mouse) {return "binOp"}
+	/*
 	if inElement(node.pos, format.topConn, mouse) {return "binTopConn"}
 	if inElement(node.pos, format.leftConn, mouse) {return "binLeftConn"}
 	if inElement(node.pos, format.botLeftConn, mouse) {return "binBotLeftConn"}
 	if inElement(node.pos, format.botRightConn, mouse) {return "binBotRightConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "binNextConn"}
-
-	return "None"
+	*/
+	return inConnElement(node.pos, node.conns, mouse)
 }
 
+/*
 getSelectedTernaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	format := cast(^TernaryOpFormat)node.format
 	if inElement(node.pos, format.topConn, mouse) {return "ternTopConn"}
@@ -246,9 +252,9 @@ getSelectedTernaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.condConn, mouse) {return "ternCondConn"}
 	if inElement(node.pos, format.expr1Conn, mouse) {return "ternExpr1Conn"}
 	if inElement(node.pos, format.expr2Conn, mouse) {return "ternExpr2Conn"}
-
 	return "None"
 }
+*/
 
 inElement :: proc(point: rl.Vector2, el: rl.Rectangle, mouse: rl.Vector2) -> bool {
 	rec := el
@@ -256,6 +262,16 @@ inElement :: proc(point: rl.Vector2, el: rl.Rectangle, mouse: rl.Vector2) -> boo
 	rec.y += point.y
 	if rl.CheckCollisionPointRec(mouse, rec) {return true}
 	return false
+}
+
+inConnElement :: proc(point: rl.Vector2, conns: [dynamic]Connection, mouse: rl.Vector2) -> string {
+	for conn in conns {
+		rec := conn.format
+		rec.x += point.x
+		rec.y += point.y
+		if rl.CheckCollisionPointRec(mouse, rec) {return conn.name}
+	}
+	return "None"
 }
 
 removeVarMod :: proc(app: ^App) {

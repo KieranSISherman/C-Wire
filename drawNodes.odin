@@ -92,6 +92,7 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
     drawLabel("Is Array:", 150, node.pos)
     drawLabel("Mods:", 180, node.pos)
 
+	/*
     // Draw Node Connectors
     //drawDatabox(node, node.format.topConn, {90,90,90,255})
     drawDatabox(node, format.leftConn, rl.GREEN)
@@ -102,6 +103,20 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
     drawDatabox(node, top, {90,90,90,255})
     top.y += 8
     drawDatabox(node, top, rl.RED)
+	*/
+	for conn in node.conns {
+		switch conn.name {
+		case "left", "next":
+			drawDatabox(node, conn.format, rl.GREEN)
+		case "top":
+			top := conn.format
+			drawDatabox(node, top, {90,90,90,255})
+			top.y += 8
+			drawDatabox(node, top, rl.RED)
+		case:
+			drawDatabox(node, conn.format, {90,90,90,255})
+		}
+	}
 
     // Draw Mods
     for mod in data.mods {
@@ -115,14 +130,25 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
 // Draw unary op
 drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
-	drawDatabox(node, format.topConn, {90,90,90,255})
+	//drawDatabox(node, format.topConn, {90,90,90,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,140,0,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
     rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4, 20}, {60,60,60,255})
 
+	/*
 	drawDatabox(node, format.leftConn, rl.GREEN)
 	drawDatabox(node, format.bottomConn, {90,90,90,255})
 	drawDatabox(node, format.nextConn, rl.GREEN)
+	*/
+
+	for conn in node.conns {
+		switch conn.name {
+		case "left", "next":
+			drawDatabox(node, conn.format, rl.GREEN)
+		case:
+			drawDatabox(node, conn.format, {90,90,90,255})
+		}
+	}
 
 	if node.selectedEl == "unOp" {drawDatabox(node, format.operation, {100,100,100,255})}
 	else {drawDatabox(node, format.operation)}
@@ -132,22 +158,34 @@ drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) 
 	rl.DrawTextEx(font, csName, {node.pos.x+105,node.pos.y+57}, 17, spacing, {235,235,235,255})
 	delete(csName)
 
-	drawLabel("Unary Operation", 10, node.pos)
+	//drawLabel("Unary Operation", 10, node.pos)
+    rl.DrawTextEx(font, "Unary Operation", {node.pos.x+10,node.pos.y+10}, 23, spacing, {235,235,235,255})
 	drawLabel("Operation:", 55, node.pos)
 }
 
 // Draw binary op
 drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
-	drawDatabox(node, format.topConn, {90,90,90,255})
+	//drawDatabox(node, , {90,90,90,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,100,0,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
     rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4, 20}, {60,60,60,255})
 
+	/*
 	drawDatabox(node, format.leftConn, rl.GREEN) 
 	drawDatabox(node, format.botLeftConn, {90,90,90,255})
 	drawDatabox(node, format.botRightConn, {90,90,90,255})
 	drawDatabox(node, format.nextConn, rl.GREEN)
+	*/
+
+	for conn in node.conns {
+		switch conn.name {
+		case "left", "next":
+			drawDatabox(node, conn.format, rl.GREEN)
+		case:
+			drawDatabox(node, conn.format, {90,90,90,255})
+		}
+	}
 
 	if node.selectedEl == "binOp" {drawDatabox(node, format.operation, {100,100,100,255})}
 	else {drawDatabox(node, format.operation)}
@@ -157,25 +195,37 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
     rl.DrawTextEx(font, csName, {node.pos.x+105,node.pos.y+57}, 17, spacing, {235,235,235,255})
 	delete(csName)
 
-	drawLabel("Binary Operation", 10, node.pos)
+	//drawLabel("Binary Operation", 10, node.pos)
+    rl.DrawTextEx(font, "Binary Operation", {node.pos.x+10,node.pos.y+10}, 23, spacing, {235,235,235,255})
 	drawLabel("Operation:", 55, node.pos)
 }
 
 
 // Draw ternary op
-drawTernaryOpNode :: proc(node: Node, data: ^TernaryOpData, format: ^TernaryOpFormat) {
+drawTernaryOpNode :: proc(node: Node) {//, data: ^TernaryOpData, format: ^TernaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
-	drawDatabox(node, format.topConn, {90,90,90,255})
 	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,60,0,255})
 	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})
 	rl.DrawRectangleV(node.pos+{2,35}, {node.size.x-4,20}, {60,60,60,255})
 
+	for conn in node.conns {
+		switch conn.name {
+		case "left", "next":
+			drawDatabox(node, conn.format, rl.GREEN)
+		case:
+			drawDatabox(node, conn.format, {90,90,90,255})
+		}
+	}
+
+	/*
 	drawDatabox(node, format.leftConn, rl.GREEN)
 	drawDatabox(node, format.nextConn, rl.GREEN)
 	drawDatabox(node, format.condConn, {90,90,90,255})
 	drawDatabox(node, format.expr1Conn, {90,90,90,255})
 	drawDatabox(node, format.expr2Conn, {90,90,90,255})
+	*/
 
-	drawLabel("Ternary Operatoin", 10, node.pos)
+	//drawLabel("Ternary Operatoin", 10, node.pos)
+    rl.DrawTextEx(font, "Ternary Operation", {node.pos.x+10,node.pos.y+10}, 22, 1, {235,235,235,255})
 	drawLabel("Operation: ?", 55, node.pos)
 }

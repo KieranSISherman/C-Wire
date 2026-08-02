@@ -17,18 +17,18 @@ NodeLayers :: struct {
 Node :: struct {
 	id: i32,
 	nodeType: NodeType,
-	/*
-	topConn: ^Wire,
-	bottomConn: ^Wire,
-	leftConn: ^Wire,
-	nextConn: ^Wire,
-	referenceConn: ^Wire,
-	*/
-	data: rawptr,//DataUnion,
 	pos: rl.Vector2,
 	size: rl.Vector2,
+	data: rawptr,//DataUnion,
 	format: rawptr,//FormatUnion,
+	conns: [dynamic]Connection,
 	selectedEl: string,
+}
+
+Connection :: struct {
+	name: string,
+	wire: ^Wire,
+	format: rl.Rectangle,
 }
 
 NodeType :: enum {
@@ -96,9 +96,9 @@ drawNode :: proc(node: Node) {
 			format := cast(^BinaryOpFormat)node.format
 			drawBinaryOpNode(node, data, format)
 		case .TERNARYOP:
-			data := cast(^TernaryOpData)node.data
-			format := cast(^TernaryOpFormat)node.format
-			drawTernaryOpNode(node, data, format)
+			//data := cast(^TernaryOpData)node.data
+			//format := cast(^TernaryOpFormat)node.format
+			drawTernaryOpNode(node)//, data, format)
 	}
 }
 
@@ -142,6 +142,12 @@ VarData :: struct {
 	isArray: bool,
 	arrayLen: [dynamic]rune,
 	value: DataValue,
+	/*
+	topConn: ^Wire,
+	leftConn: ^Wire,
+	bottomConn: ^Wire,
+	nextConn: ^Wire,
+	*/
 }
 
 Mod :: struct {
@@ -162,11 +168,13 @@ VarFormat :: struct {
 	modSearch: rl.Rectangle,
 	array: rl.Rectangle,
 	arrayLen: rl.Rectangle,
+	/*
 	topConn: rl.Rectangle,
 	leftConn: rl.Rectangle,
 	bottomConn: rl.Rectangle,
 	//rightConn: rl.Rectangle,
 	nextConn: rl.Rectangle,
+	*/
 }
 
 initVarFormat :: proc() -> VarFormat {
@@ -178,13 +186,22 @@ initVarFormat :: proc() -> VarFormat {
 		arrayLen = {x=130,y=150,width=55,height=20},
 		mods = {x=15,y=210,width=170,height=80},
 		modSearch = {x=65,y=180,width=120,height=20},
+		/*
 		topConn = {x=95,y=-6,width=10,height=10},
 		leftConn = {x=-3,y=150,width=10,height=10},
 		bottomConn = {x=95,y=305,width=10,height=10},
 		nextConn = {x=195,y=150,width=10,height=10},
+		*/
 		//rightConn = {x=195,y=170,width=10,height=10},
 		//nextConn = {x=195,y=130,width=10,height=10},
 	}
+}
+
+addNewVarConnData :: proc(conns: ^[dynamic]Connection) {
+	append(conns, Connection{name="top", wire=nil, format=rl.Rectangle{x=95,y=-5,width=10,height=10}})
+	append(conns, Connection{name="left", wire=nil, format=rl.Rectangle{x=-3,y=152,width=10,height=10}})
+	append(conns, Connection{name="bottom", wire=nil, format=rl.Rectangle{x=95,y=305,width=10,height=10}})
+	append(conns, Connection{name="next", wire=nil, format=rl.Rectangle{x=195,y=155,width=10,height=10}})
 }
 
 createNewVar :: proc(app: ^App) {
@@ -200,6 +217,12 @@ createNewVar :: proc(app: ^App) {
 	varData.isArray = false
 	varData.arrayLen = make([dynamic]rune)
 	varData.value = make([dynamic]rune)
+	/*
+	varData.topConn = nil
+	varData.leftConn = nil
+	varData.bottomConn = nil
+	varData.nextConn = nil
+	*/
 
 	varFormat := new(VarFormat)
 	varFormat^ = initVarFormat()
@@ -212,8 +235,10 @@ createNewVar :: proc(app: ^App) {
 		selectedEl = "",
 		format = varFormat,
 		data = varData,
+		conns = make([dynamic]Connection)
 	}
 
+	addNewVarConnData(&node.conns)
 	append(&app.nodes.bottom, node)
 }
 
@@ -247,6 +272,10 @@ addVarMod :: proc(data: ^VarData, format: ^VarFormat) {//node: ^Node) {
 
 UnaryOpData :: struct {
 	operation: [dynamic]rune,
+	topConn: ^Wire,
+	leftConn: ^Wire,
+	bottomConn: ^Wire,
+	nextConn: ^Wire,
 }
 
 UnaryOpFormat :: struct {
@@ -259,18 +288,33 @@ UnaryOpFormat :: struct {
 
 initUnaryOpData :: proc() -> UnaryOpData {
 	return UnaryOpData {
-		operation = make([dynamic]rune)
+		operation = make([dynamic]rune),
+		/*
+		topConn = nil,
+		leftConn = nil,
+		bottomConn = nil,
+		nextConn = nil,
+		*/
 	}
 }
 
 initUnaryOpFormat :: proc() -> UnaryOpFormat {
 	return UnaryOpFormat {
 		operation = {x=110,y=55,width=80,height=20},
+		/*
 		topConn = {x=95,y=-6,width=10,height=10},
 		leftConn = {x=-3,y=58,width=10,height=10},
 		bottomConn = {x=95,y=95,width=10,height=10},
 		nextConn = {x=195,y=60,width=10,height=10},
+		*/
 	}
+}
+
+addUnaryOpConnData :: proc(conns: ^[dynamic]Connection) {
+	append(conns, Connection{name="top", wire=nil, format=rl.Rectangle{x=95,y=-5,width=10,height=10}})
+	append(conns, Connection{name="left", wire=nil, format=rl.Rectangle{x=-3,y=58,width=10,height=10}})
+	append(conns, Connection{name="bottom", wire=nil, format=rl.Rectangle{x=95,y=95,width=10,height=10}})
+	append(conns, Connection{name="next", wire=nil, format=rl.Rectangle{x=195,y=60,width=10,height=10}})
 }
 
 createUnaryOp :: proc(app: ^App) {
@@ -291,7 +335,9 @@ createUnaryOp :: proc(app: ^App) {
 		selectedEl = "",
 		format = unaryOpFormat,
 		data = unaryOpData,
+		conns = make([dynamic]Connection),
 	}
+	addUnaryOpConnData(&node.conns)
 	append(&app.nodes.bottom, node)
 }
 
@@ -301,32 +347,56 @@ createUnaryOp :: proc(app: ^App) {
 
 BinaryOpData :: struct {
 	operation: [dynamic]rune,
+	/*
+	topConn: ^Wire,
+	leftConn: ^Wire,
+	bottomConn: ^Wire,
+	nextConn: ^Wire,
+	*/
 }
 
 BinaryOpFormat :: struct {
 	operation: rl.Rectangle,
+	/*
 	topConn: rl.Rectangle,
 	leftConn: rl.Rectangle,
 	botLeftConn: rl.Rectangle,
 	botRightConn: rl.Rectangle,
 	nextConn: rl.Rectangle,
+	*/
 }
 
 initBinaryOpData :: proc() -> BinaryOpData {
 	return BinaryOpData {
-		operation = make([dynamic]rune)	
+		operation = make([dynamic]rune),
+		/*
+		topConn = nil,
+		leftConn = nil,
+		bottomConn = nil,
+		nextConn = nil,
+		*/
 	}
 }
 
 initBinaryOpFormat :: proc() -> BinaryOpFormat {
 	return BinaryOpFormat {
 		operation = {x=110,y=55,width=80,height=20},	
+		/*
 		topConn = {x=95,y=-6,width=10,height=10},
 		leftConn = {x=-3,y=58,width=10,height=10},
 		botLeftConn = {x=60,y=95,width=10,height=10},
 		botRightConn = {x=130,y=95,width=10,height=10},
 		nextConn = {x=195,y=60,width=10,height=10},
+		*/
 	}
+}
+
+addBinaryOpConnData :: proc(conns: ^[dynamic]Connection) {
+	append(conns, Connection{name="top", wire=nil, format=rl.Rectangle{x=95,y=-5,width=10,height=10}})
+	append(conns, Connection{name="left", wire=nil, format=rl.Rectangle{x=-3,y=58,width=10,height=10}})
+	append(conns, Connection{name="botLeft", wire=nil, format=rl.Rectangle{x=60,y=95,width=10,height=10}})
+	append(conns, Connection{name="botRight", wire=nil, format=rl.Rectangle{x=130,y=95,width=10,height=10}})
+	append(conns, Connection{name="next", wire=nil, format=rl.Rectangle{x=195,y=60,width=10,height=10}})
 }
 
 createBinaryOp :: proc(app: ^App) {
@@ -347,7 +417,9 @@ createBinaryOp :: proc(app: ^App) {
 		selectedEl = "",
 		format = binOpFormat,
 		data = binOpData,
+		conns = make([dynamic]Connection)
 	}
+	addBinaryOpConnData(&node.conns)
 	append(&app.nodes.bottom, node)
 }
 
@@ -355,6 +427,7 @@ createBinaryOp :: proc(app: ^App) {
    Ternary Operator
 */
 
+/*
 TernaryOpData :: struct {
 	topConn: ^Wire,
 	leftConn: ^Wire,
@@ -394,16 +467,28 @@ initTernaryOpFormat :: proc() -> TernaryOpFormat {
 		expr2Conn = {x=150,y=95,width=10,height=10},
 	}
 }
+*/
+
+addTernaryOpConnData :: proc(conns: ^[dynamic]Connection) {
+	append(conns, Connection{name="top", wire=nil, format=rl.Rectangle{x=95,y=-5,width=10,height=10}})
+	append(conns, Connection{name="left", wire=nil, format=rl.Rectangle{x=-3,y=58,width=10,height=10}})
+	append(conns, Connection{name="next", wire=nil, format=rl.Rectangle{x=195,y=60,width=10,height=10}})
+	append(conns, Connection{name="cond", wire=nil, format=rl.Rectangle{x=50,y=95,width=10,height=10}})
+	append(conns, Connection{name="expr1", wire=nil, format=rl.Rectangle{x=100,y=95,width=10,height=10}})
+	append(conns, Connection{name="expr2", wire=nil, format=rl.Rectangle{x=150,y=95,width=10,height=10}})
+}
 
 createTernaryOp :: proc(app: ^App) {
 	Pos := app.sidebar.staticPos
 	Id := app.nextId
 
+	/*
 	ternOpData := new(TernaryOpData)
 	ternOpData^ = initTernaryOpData()
 
 	ternOpFormat := new(TernaryOpFormat)
 	ternOpFormat^ = initTernaryOpFormat()
+	*/
 
 	node: Node = {
 		id = Id,
@@ -411,9 +496,11 @@ createTernaryOp :: proc(app: ^App) {
 		nodeType = .TERNARYOP,
 		size = {200,100},
 		selectedEl = "",
-		format = ternOpFormat,
-		data = ternOpData,
+		format = nil,
+		data = nil,
+		conns = make([dynamic]Connection)
 	}
+	addTernaryOpConnData(&node.conns)
 	append(&app.nodes.bottom, node)
 }
 
@@ -451,4 +538,5 @@ freeNode :: proc(node: ^Node) {
 	}
 	free(node.data)
 	free(node.format)
+	delete(node.conns)
 }
