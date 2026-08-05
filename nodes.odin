@@ -127,6 +127,7 @@ createNode :: proc(nodeType: NodeType, app: ^App) {
 	case:
 		return
 	}
+	app.nextId += 1
 }
 
 /*

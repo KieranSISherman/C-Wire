@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:mem"
 import rl "vendor:raylib"
 
 /*
@@ -67,6 +68,23 @@ update :: proc(app: ^App) {
 }
 
 main :: proc() {
+
+	when ODIN_DEBUG {
+		track: mem.Tracking_Allocator
+		mem.tracking_allocator_init(&track, context.allocator)
+		context.allocator = mem.tracking_allocator(&track)
+
+		defer {
+			if len(track.allocation_map) > 0 {
+				fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+				for _, entry in track.allocation_map {
+					fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+				}
+			}
+			mem.tracking_allocator_destroy(&track)
+		}
+	}
+	
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(1280, 720, "C-Wire")
 	defer rl.CloseWindow()
@@ -83,12 +101,22 @@ main :: proc() {
 			zoom = 1,
 		},
 		mouse = {
+			/*
 			clicked = 0,
 			delta = {0, 0},
 			dragging = false,
 			selected = nil,
 			cornerDelta = {0, 0},
 			pos = {0, 0},
+			*/
+			clicked = 0,
+			delta = {0, 0},
+			pos = {0, 0},
+			selected = {
+				dragging = false,
+				cornerDelta = {0, 0},
+				value = nil,
+			}
 		},
 		keyboard = {
 			timeWait = 0,
@@ -150,6 +178,9 @@ main :: proc() {
 	}
 	for &n in app.nodes.top {freeNode(&n)}
 	for &n in app.nodes.bottom {freeNode(&n)}
+	delete(app.nodes.top)
+	delete(app.nodes.bottom)
+
 	delete(app.sidebar.createSearch)
 	delete(importedTypes)
 	delete(userVarTypes)

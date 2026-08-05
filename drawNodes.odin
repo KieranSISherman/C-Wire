@@ -18,6 +18,11 @@ drawDatabox :: proc(node: Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,2
     rl.DrawRectangleV(node.pos+{rec.x,rec.y}, {rec.width,rec.height}, color)
 }
 
+drawRuneText :: proc(text: []rune, pos: rl.Vector2, fontSize: f32 = 17) {
+	csName := strings.clone_to_cstring(utf8.runes_to_string(text))
+	rl.DrawTextEx(font, csName, pos, fontSize, 1, {235,235,235,255})
+	delete(csName)
+}
 
 // Draw new var
 
@@ -53,21 +58,12 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
     //rl.DrawText("New Variable", i32(node.pos.x+10), i32(node.pos.y+15), 25, {235,235,235,255})
     rl.DrawTextEx(font, "New Variable", {node.pos.x+10,node.pos.y+15}, 25, spacing, {235,235,235,255})
 
-    csName: cstring = strings.clone_to_cstring(utf8.runes_to_string(data.name[:]))
-    //rl.DrawText(csName, i32(node.pos.x)+70, i32(node.pos.y)+62, 17, {235,235,235,255})
-    rl.DrawTextEx(font, csName, {node.pos.x+70,node.pos.y+62}, 17, spacing, {235,235,235,255})
-
-    csName = strings.clone_to_cstring(utf8.runes_to_string(data.type[:]))
-    //rl.DrawText(csName, i32(node.pos.x)+70, i32(node.pos.y)+92, 17, {235,235,235,255})
-    rl.DrawTextEx(font, csName, {node.pos.x+70,node.pos.y+92}, 17, spacing, {235,235,235,255})
-
-    csName = strings.clone_to_cstring(utf8.runes_to_string(data.modSearch[:]))
-    //rl.DrawText(csName, i32(node.pos.x)+70, i32(node.pos.y)+182, 17, {235,235,235,255})
-    rl.DrawTextEx(font, csName, {node.pos.x+70,node.pos.y+182}, 17, spacing, {235,235,235,255})
+    drawRuneText(data.name[:], {node.pos.x+70,node.pos.y+62})
+    drawRuneText(data.type[:], {node.pos.x+70,node.pos.y+92})
+    drawRuneText(data.modSearch[:], {node.pos.x+70,node.pos.y+182})
 
     if data.isArray {
-        csName = strings.clone_to_cstring(utf8.runes_to_string(data.arrayLen[:]))
-        rl.DrawTextEx(font, csName, {node.pos.x+135,node.pos.y+152}, 17, spacing, {235, 235, 235, 255})
+		drawRuneText(data.arrayLen[:], {node.pos.x+135,node.pos.y+152})
     }
     else {
         switch type in data.value {
@@ -75,15 +71,13 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
                 break
             case [dynamic]rune:
                 //fmt.println("Rune")
-                csName = strings.clone_to_cstring(utf8.runes_to_string(type[:]))
                 //rl.DrawText(csName, i32(node.pos.x)+70, i32(node.pos.y)+122, 17, {235,235,235,255})
-                rl.DrawTextEx(font, csName, {node.pos.x+80,node.pos.y+122}, 17, spacing, {235,235,235,255})
+				drawRuneText(type[:], {node.pos.x+80,node.pos.y+122})
             case ^Node:
                 //fmt.println("Node")
                 drawDatabox(node, format.value, {70,70,70,255})
         }
     }
-    delete(csName)
 
     // Draw Labels
     drawLabel("Name:", 60, node.pos)
@@ -154,9 +148,7 @@ drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) 
 	else {drawDatabox(node, format.operation)}
 
 	spacing: f32 = 1
-	csName: cstring = strings.clone_to_cstring(utf8.runes_to_string(data.operation[:]))
-	rl.DrawTextEx(font, csName, {node.pos.x+105,node.pos.y+57}, 17, spacing, {235,235,235,255})
-	delete(csName)
+	drawRuneText(data.operation[:], {node.pos.x+105,node.pos.y+57})
 
 	//drawLabel("Unary Operation", 10, node.pos)
     rl.DrawTextEx(font, "Unary Operation", {node.pos.x+10,node.pos.y+10}, 23, spacing, {235,235,235,255})
@@ -192,7 +184,7 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
 
 	spacing: f32 = 1
     csName: cstring = strings.clone_to_cstring(utf8.runes_to_string(data.operation[:]))
-    rl.DrawTextEx(font, csName, {node.pos.x+105,node.pos.y+57}, 17, spacing, {235,235,235,255})
+    drawRuneText(data.operation[:], {node.pos.x+105,node.pos.y+57})
 	delete(csName)
 
 	//drawLabel("Binary Operation", 10, node.pos)

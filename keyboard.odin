@@ -10,13 +10,13 @@ Keyboard :: struct {
 
 keyboardEvents :: proc(app: ^App) {
 	databox: ^[dynamic]rune
-	if app.mouse.selected == nil {
+	if app.mouse.selected.value == nil {
 		if app.sidebar.show == true {
 			databox = &app.sidebar.createSearch
 		}
 		else {return}
 	}
-	else {databox = getDatabox(app.mouse.selected)}
+	else if node, ok := app.mouse.selected.value.(^Node); ok {databox = getDatabox(node)}
 
 	if databox == nil {return}
 
@@ -37,13 +37,13 @@ keyboardEvents :: proc(app: ^App) {
 		}
 	}
 	else if rl.IsKeyPressed(.ENTER) {
-		if app.mouse.selected != nil && app.mouse.selected.nodeType == .NEWVAR && app.mouse.selected.selectedEl == "varModSearch" {
-			node := app.mouse.selected
+		fmt.println("Enter")
+		if node, ok := app.mouse.selected.value.(^Node); ok && node.nodeType == .NEWVAR && node.selectedEl == "varModSearch" {
 			data := cast(^VarData)node.data
 			format := cast(^VarFormat)node.format
 			addVarMod(data, format)
 		}
-		else if app.mouse.selected == nil && app.sidebar.show == true {
+		else if app.sidebar.show == true {
 			nodeString: = utf8.runes_to_string(app.sidebar.createSearch[:])
 			fmt.println("new = ", nodeString)
 			nodeType := stringToNodeType(nodeString)

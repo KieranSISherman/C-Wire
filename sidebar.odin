@@ -48,15 +48,16 @@ Sidebar :: struct {
 drawSidebar :: proc(app: ^App) {
 	app := app
 	//fmt.println(app.sidebar.staticPos)
-	if app.mouse.selected == nil {//|| app.sidebar.display == "create" {
+	if app.mouse.selected.value == nil {//|| app.sidebar.display == "create" {
 		drawCreateNodes(app)		
 		return
 	}
+	else if _, ok := app.mouse.selected.value.(^Node); !ok {return}
+	node := app.mouse.selected.value.(^Node)
 	app.sidebar.staticPos = {-1,-1}
 
-	sidebarX := i32(app.mouse.selected.pos.x + app.mouse.selected.size.x + 5)
+	sidebarX := i32(node.pos.x + node.size.x + 5)
 	//sidebarWidth: i32 = 175
-	node := app.mouse.selected
 	sidebar := app.sidebar
 
 	app.sidebar.camera.offset = {f32(sidebarX), f32(node.pos.y)}
@@ -148,11 +149,12 @@ drawCreateNodes :: proc(app: ^App) {
 }
 
 drawVarTypes :: proc(app: ^App) {
-	if app.mouse.selected == nil {return}
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	sidebar := app.sidebar
-	data := cast(^VarData)app.mouse.selected.data
+	node: ^Node = app.mouse.selected.value.(^Node)
+	data := cast(^VarData)node.data
 	search: string = utf8.runes_to_string(data.type[:])
-	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+	scrollHeight: i32 = i32(node.size.y-10)
 
 	
 	/*
@@ -194,11 +196,12 @@ drawVarTypes :: proc(app: ^App) {
 }
 
 drawVarMods :: proc(app: ^App) {
-	if app.mouse.selected == nil {return}
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	sidebar := app.sidebar
-	data := cast(^VarData)app.mouse.selected.data
+	node: ^Node = app.mouse.selected.value.(^Node)
+	data := cast(^VarData)node.data
 	search: string = utf8.runes_to_string(data.modSearch[:])
-	sidebarHeight: i32 = i32(app.mouse.selected.size.y-10)
+	sidebarHeight: i32 = i32(node.size.y-10)
 
 	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
@@ -211,11 +214,12 @@ drawVarMods :: proc(app: ^App) {
 }
 
 drawUnOps :: proc(app: ^App) {
-	if app.mouse.selected == nil {return}
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	sidebar := app.sidebar
-	data := cast(^UnaryOpData)app.mouse.selected.data
+	node: ^Node = app.mouse.selected.value.(^Node)
+	data := cast(^UnaryOpData)node.data
 	search: string = utf8.runes_to_string(data.operation[:])
-	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+	scrollHeight: i32 = i32(node.size.y-10)
 	
 	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}
@@ -266,11 +270,12 @@ drawUnOps :: proc(app: ^App) {
 }
 
 drawBinOps :: proc(app: ^App) {
-	if app.mouse.selected == nil {return}
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	sidebar := app.sidebar
-	data := cast(^BinaryOpData)app.mouse.selected.data
+	node: ^Node = app.mouse.selected.value.(^Node)
+	data := cast(^BinaryOpData)node.data
 	search: string = utf8.runes_to_string(data.operation[:])
-	scrollHeight: i32 = i32(app.mouse.selected.size.y-10)
+	scrollHeight: i32 = i32(node.size.y-10)
 
 	spacing: f32 = 1
 	drawPos: rl.Vector2 = {10,f32(15+sidebar.scrollOffset)}

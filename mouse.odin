@@ -3,6 +3,125 @@ package main
 import "core:fmt"
 import rl "vendor:raylib"
 
+SelectionType :: union {
+	^Node,
+	^Wire,
+}
+
+Selection :: struct {
+	dragging: bool,
+	cornerDelta: rl.Vector2,
+	value: SelectionType
+}
+
+Mouse :: struct {
+	clicked: i32, // 0 = none, 1 = left, 2 = right
+	delta: rl.Vector2,
+	pos: rl.Vector2,
+	selected: Selection,
+}
+
+mouseEvents :: proc(app: ^App) {
+	app.mouse.pos = rl.GetScreenToWorld2D(rl.GetMousePosition(), app.camera)
+
+	mouse := &app.mouse
+	selected := app.mouse.selected
+
+	if rl.IsMouseButtonDown(.LEFT) {
+		if selected.dragging {drag(mouse)}
+		else if mouse.clicked == 1 {checkDrag(app)}
+		else {
+			mouse.clicked = 1
+			if node, ok := selected.value.(^Node); ok {node.selectedEl = ""}
+			if selected.value == nil {
+				selected.value, selected.cornerDelta = getSelected(app)
+				fmt.println(selected.value)
+				selected.cornerDelta = {0,0}
+			}
+		}
+	}
+	else if rl.IsMouseButtonDown(.RIGHT) {
+		mouse.clicked = 2
+	}
+	else {
+		if mouse.clicked == 1 {leftClick(app)}
+		else if mouse.clicked == 2 {
+			rightClick(app)
+		}
+
+		mouse.clicked = 0
+		mouse.delta = {0, 0}
+		mouse.selected.dragging = false
+	}
+
+	scroll := rl.GetMouseWheelMove()
+	if scroll != 0 {scrollEvent(app, scroll)}
+}
+
+scrollEvent :: proc(app: ^App, scroll: f32) {
+	sidebarRec: rl.Rectangle
+	selected := app.mouse.selected.value
+
+	if selected == nil {
+		pos := app.sidebar.staticPos
+		width := f32(app.sidebar.width)
+		height := f32(app.sidebar.height)
+		sidebarRec = {pos.x, pos.y, width, height}
+	}
+	else if node, ok := selected.(^Node); ok {
+		sidebarX := node.pos.x + node.size.x + 5
+		sidebarY := node.pos.y
+		width := f32(app.sidebar.width)
+		height := f32(app.sidebar.height)
+		sidebarRec = {sidebarX, sidebarY, width, height}
+	}
+
+	if rl.CheckCollisionPointRec(app.mouse.pos, sidebarRec) {
+		if app.sidebar.scrollOffset >= 0 && scroll > 0 {
+			app.sidebar.scrollOffset += i32(scroll*20)
+		}
+	}
+
+	if app.sidebar.scrollOffset < app.sidebar.maxScroll {
+		//	
+	}
+}
+
+drag :: proc(mouse: ^Mouse) {
+	if node, ok := mouse.selected.value.(^Node); !ok {return}
+	mouse.selected.value.(^Node).pos = mouse.pos - mouse.selected.cornerDelta
+	mouse.selected.value.(^Node).selectedEl = ""
+}
+
+checkDrag :: proc(app: ^App) {
+	app.mouse.delta = rl.GetMouseDelta()
+	if abs(app.mouse.delta.x) > 5 || abs(app.mouse.delta.y) > 5 {
+		app.mouse.selected.dragging = true
+		app.sidebar.show = false
+	}
+}
+
+leftClick :: proc(app: ^App) {
+	selected := app.mouse.selected
+	app.sidebar.show = false
+	if node, ok := selected.value.(^Node); ok {
+		node.selectedEl = getSelectedElement(node, app.mouse.pos)
+		fmt.println(node.selectedEl)
+		clickUpdate(node, app)
+	}
+}
+
+rightClick :: proc(app: ^App) {
+	selected := app.mouse.selected
+	selected.value, selected.cornerDelta = getSelected(app)
+	if selected.value == nil {
+		// Show menu to create new node
+		app.sidebar.show = true
+		app.sidebar.staticPos = {-1, -1}
+	}
+}
+
+/*
 Mouse :: struct {
 	clicked: i32, // 0 = none, 1 = left, 2 = right
 	delta: rl.Vector2,
@@ -99,11 +218,21 @@ mouseEvents :: proc(app: ^App) {
 		*/
 	}
 }
+*/
 
-clickUpdate :: proc(app: ^App) {
+clickUpdate :: proc {
+	clickUpdateNode,
+	clickUpdateWire,
+}
+
+clickUpdateWire :: proc(wire: ^Wire, app: ^App) {
+
+}
+
+clickUpdateNode :: proc(node: ^Node, app: ^App) {
 	app := app
-	if app.mouse.selected == nil {return}
-	node := app.mouse.selected
+	node := node
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	app.sidebar.show = false
 
 	switch node.selectedEl {
@@ -139,8 +268,9 @@ clickUpdate :: proc(app: ^App) {
 	}
 }
 
-getSelected :: proc(app: ^App) {
+getSelected :: proc(app: ^App) -> (SelectionType, rl.Vector2) {
 	mouse := rl.GetScreenToWorld2D(rl.GetMousePosition(), app.camera)
+	selected := &app.mouse.selected.value
 
 	for i in 0..<len(app.nodes.top){
 		node := &app.nodes.top[i]
@@ -153,9 +283,11 @@ getSelected :: proc(app: ^App) {
 		}
 
 		if rl.CheckCollisionPointRec(mouse, rect) {
-			app.mouse.selected = node
-			app.mouse.cornerDelta = mouse - node.pos
-			return
+			/*
+			selected = node
+			app.mouse.selected.cornerDelta = mouse - node.pos
+			*/
+			return node, (mouse - node.pos)
 		}
 	}
 	for i in 0..<len(app.nodes.bottom) {
@@ -169,16 +301,19 @@ getSelected :: proc(app: ^App) {
 		}
 
 		if rl.CheckCollisionPointRec(mouse, rect) {
-			app.mouse.selected = node
+			/*
+			selected = node
 			app.mouse.cornerDelta = mouse - node.pos
-			return
+			*/
+			return node, (mouse - node.pos)
 		}
 	}
 
 	if len(app.sidebar.createSearch) > 0 {clear(&app.sidebar.createSearch)}
-	if app.mouse.selected == nil {return}
-	app.mouse.selected.selectedEl = ""
-	app.mouse.selected = nil
+	if node, ok := selected.(^Node); ok {
+		node.selectedEl = ""
+	}
+	return nil, {0,0}
 }
 
 getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
@@ -227,7 +362,7 @@ getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.bottomConn, mouse) {return "unBottomConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "unNextConn"}
 
-	return "None"
+	return inConnElement(node.pos, node.conns, mouse)
 }
 
 getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
@@ -275,8 +410,8 @@ inConnElement :: proc(point: rl.Vector2, conns: [dynamic]Connection, mouse: rl.V
 }
 
 removeVarMod :: proc(app: ^App) {
-	if app.mouse.selected == nil {return}
-	node := app.mouse.selected
+	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
+	node := app.mouse.selected.value.(^Node)
 	data := cast(^VarData)node.data
 
 	for mod, idx in data.mods {
