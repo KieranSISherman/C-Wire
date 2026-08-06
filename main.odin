@@ -81,6 +81,9 @@ main :: proc() {
 					fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
 				}
 			}
+			else {
+				fmt.println("=== No Memory Leaks Found ===")
+			}
 			mem.tracking_allocator_destroy(&track)
 		}
 	}

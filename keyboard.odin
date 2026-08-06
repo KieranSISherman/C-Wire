@@ -45,6 +45,7 @@ keyboardEvents :: proc(app: ^App) {
 		}
 		else if app.sidebar.show == true {
 			nodeString: = utf8.runes_to_string(app.sidebar.createSearch[:])
+			defer delete(nodeString)
 			fmt.println("new = ", nodeString)
 			nodeType := stringToNodeType(nodeString)
 			fmt.println("new = ", nodeType)

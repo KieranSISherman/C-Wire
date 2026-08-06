@@ -19,9 +19,11 @@ drawDatabox :: proc(node: Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,2
 }
 
 drawRuneText :: proc(text: []rune, pos: rl.Vector2, fontSize: f32 = 17) {
-	csName := strings.clone_to_cstring(utf8.runes_to_string(text))
+	sName := utf8.runes_to_string(text)
+	defer delete(sName)
+	csName := strings.clone_to_cstring(sName)
+	defer delete(csName)
 	rl.DrawTextEx(font, csName, pos, fontSize, 1, {235,235,235,255})
-	delete(csName)
 }
 
 // Draw new var
@@ -148,7 +150,7 @@ drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) 
 	else {drawDatabox(node, format.operation)}
 
 	spacing: f32 = 1
-	drawRuneText(data.operation[:], {node.pos.x+105,node.pos.y+57})
+	drawRuneText(data.operation[:], {node.pos.x+115,node.pos.y+57})
 
 	//drawLabel("Unary Operation", 10, node.pos)
     rl.DrawTextEx(font, "Unary Operation", {node.pos.x+10,node.pos.y+10}, 23, spacing, {235,235,235,255})
@@ -183,9 +185,8 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
 	else {drawDatabox(node, format.operation)}
 
 	spacing: f32 = 1
-    csName: cstring = strings.clone_to_cstring(utf8.runes_to_string(data.operation[:]))
-    drawRuneText(data.operation[:], {node.pos.x+105,node.pos.y+57})
-	delete(csName)
+    //`csName: cstring = strings.clone_to_cstring(utf8.runes_to_string(data.operation[:]))
+    drawRuneText(data.operation[:], {node.pos.x+115,node.pos.y+57})
 
 	//drawLabel("Binary Operation", 10, node.pos)
     rl.DrawTextEx(font, "Binary Operation", {node.pos.x+10,node.pos.y+10}, 23, spacing, {235,235,235,255})

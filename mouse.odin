@@ -25,7 +25,7 @@ mouseEvents :: proc(app: ^App) {
 	app.mouse.pos = rl.GetScreenToWorld2D(rl.GetMousePosition(), app.camera)
 
 	mouse := &app.mouse
-	selected := app.mouse.selected
+	selected := &app.mouse.selected
 
 	if rl.IsMouseButtonDown(.LEFT) {
 		if selected.dragging {drag(mouse)}
@@ -35,8 +35,6 @@ mouseEvents :: proc(app: ^App) {
 			if node, ok := selected.value.(^Node); ok {node.selectedEl = ""}
 			if selected.value == nil {
 				selected.value, selected.cornerDelta = getSelected(app)
-				fmt.println(selected.value)
-				selected.cornerDelta = {0,0}
 			}
 		}
 	}
@@ -77,7 +75,8 @@ scrollEvent :: proc(app: ^App, scroll: f32) {
 	}
 
 	if rl.CheckCollisionPointRec(app.mouse.pos, sidebarRec) {
-		if app.sidebar.scrollOffset >= 0 && scroll > 0 {
+		if app.sidebar.scrollOffset >= 0 && scroll > 0 {}
+		else {
 			app.sidebar.scrollOffset += i32(scroll*20)
 		}
 	}
@@ -102,8 +101,11 @@ checkDrag :: proc(app: ^App) {
 }
 
 leftClick :: proc(app: ^App) {
-	selected := app.mouse.selected
+	selected := &app.mouse.selected
 	app.sidebar.show = false
+	selected.value, selected.cornerDelta = getSelected(app)
+	fmt.println(selected)
+
 	if node, ok := selected.value.(^Node); ok {
 		node.selectedEl = getSelectedElement(node, app.mouse.pos)
 		fmt.println(node.selectedEl)
@@ -112,8 +114,9 @@ leftClick :: proc(app: ^App) {
 }
 
 rightClick :: proc(app: ^App) {
-	selected := app.mouse.selected
+	selected := &app.mouse.selected
 	selected.value, selected.cornerDelta = getSelected(app)
+	fmt.println(selected.value)
 	if selected.value == nil {
 		// Show menu to create new node
 		app.sidebar.show = true
@@ -230,13 +233,14 @@ clickUpdateWire :: proc(wire: ^Wire, app: ^App) {
 }
 
 clickUpdateNode :: proc(node: ^Node, app: ^App) {
+	fmt.println("Node Click Update")
 	app := app
 	node := node
-	if _, ok := app.mouse.selected.value.(^Node); !ok {return}
+	//if _, ok := app.mouse.selected.value.(^Node); !ok {return}
 	app.sidebar.show = false
 
 	switch node.selectedEl {
-	// Var
+		// Var
 		case "varType":
 			app.sidebar.show = true
 			app.sidebar.scrollOffset = 0

@@ -247,6 +247,7 @@ createNewVar :: proc(app: ^App) {
 
 addVarMod :: proc(data: ^VarData, format: ^VarFormat) {//node: ^Node) {
     search: string = utf8.runes_to_string(data.modSearch[:])
+	defer delete(search)
     for selectedMod in varMods { // varMods from sidebar.odin
         if string(selectedMod) == search {
             if len(data.mods) != 0 {

@@ -47,7 +47,6 @@ Sidebar :: struct {
 
 drawSidebar :: proc(app: ^App) {
 	app := app
-	//fmt.println(app.sidebar.staticPos)
 	if app.mouse.selected.value == nil {//|| app.sidebar.display == "create" {
 		drawCreateNodes(app)		
 		return
@@ -98,6 +97,7 @@ drawSidebarContent :: proc(app: ^App) {
 
 drawCreateNodes :: proc(app: ^App) {
 	pos: rl.Vector2
+	//fmt.println("staticPos = ", app.sidebar.staticPos)
 	if app.sidebar.staticPos.x == -1 {
 		pos = app.mouse.pos
 		app.sidebar.staticPos = pos
@@ -106,7 +106,9 @@ drawCreateNodes :: proc(app: ^App) {
 
 	width := app.sidebar.width
 	height := app.sidebar.height
-	search: cstring = strings.clone_to_cstring(utf8.runes_to_string(app.sidebar.createSearch[:]))
+	strSearch: string = utf8.runes_to_string(app.sidebar.createSearch[:])
+	defer delete(strSearch)
+	search: cstring = strings.clone_to_cstring(strSearch)
 	defer delete(search)
 
 	app.sidebar.camera.offset = pos
@@ -154,6 +156,7 @@ drawVarTypes :: proc(app: ^App) {
 	node: ^Node = app.mouse.selected.value.(^Node)
 	data := cast(^VarData)node.data
 	search: string = utf8.runes_to_string(data.type[:])
+	defer delete(search)
 	scrollHeight: i32 = i32(node.size.y-10)
 
 	
@@ -201,6 +204,7 @@ drawVarMods :: proc(app: ^App) {
 	node: ^Node = app.mouse.selected.value.(^Node)
 	data := cast(^VarData)node.data
 	search: string = utf8.runes_to_string(data.modSearch[:])
+	defer delete(search)
 	sidebarHeight: i32 = i32(node.size.y-10)
 
 	spacing: f32 = 1
@@ -219,6 +223,7 @@ drawUnOps :: proc(app: ^App) {
 	node: ^Node = app.mouse.selected.value.(^Node)
 	data := cast(^UnaryOpData)node.data
 	search: string = utf8.runes_to_string(data.operation[:])
+	defer delete(search)
 	scrollHeight: i32 = i32(node.size.y-10)
 	
 	spacing: f32 = 1
@@ -275,6 +280,7 @@ drawBinOps :: proc(app: ^App) {
 	node: ^Node = app.mouse.selected.value.(^Node)
 	data := cast(^BinaryOpData)node.data
 	search: string = utf8.runes_to_string(data.operation[:])
+	defer delete(search)
 	scrollHeight: i32 = i32(node.size.y-10)
 
 	spacing: f32 = 1
