@@ -14,7 +14,7 @@ drawLabel :: proc(name: cstring, height: i32, pos: rl.Vector2, spacing: f32 = 2)
     rl.DrawTextEx(font, name, {pos.x+15,pos.y+f32(height)}, 17, spacing, {235,235,235,255})
 }
 
-drawDatabox :: proc(node: Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,255}) {
+drawDatabox :: proc(node: ^Node, rec: rl.Rectangle, color: rl.Color = {80,80,80,255}) {
     rl.DrawRectangleV(node.pos+{rec.x,rec.y}, {rec.width,rec.height}, color)
 }
 
@@ -28,7 +28,7 @@ drawRuneText :: proc(text: []rune, pos: rl.Vector2, fontSize: f32 = 17) {
 
 // Draw new var
 
-drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
+drawNewVarNode :: proc(node: ^Node, data: ^VarData, format: ^VarFormat) {
     // Draw node
 	spacing: f32 = 1
     rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
@@ -124,7 +124,7 @@ drawNewVarNode :: proc(node: Node, data: ^VarData, format: ^VarFormat) {
 }
 
 // Draw unary op
-drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) {
+drawUnaryOpNode :: proc(node: ^Node, data: ^UnaryOpData, format: ^UnaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
 	//drawDatabox(node, format.topConn, {90,90,90,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,140,0,255})
@@ -158,7 +158,7 @@ drawUnaryOpNode :: proc(node: Node, data: ^UnaryOpData, format: ^UnaryOpFormat) 
 }
 
 // Draw binary op
-drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpFormat) {
+drawBinaryOpNode :: proc(node: ^Node, data: ^BinaryOpData, format: ^BinaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
 	//drawDatabox(node, , {90,90,90,255})
     rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,100,0,255})
@@ -195,7 +195,7 @@ drawBinaryOpNode :: proc(node: Node, data: ^BinaryOpData, format: ^BinaryOpForma
 
 
 // Draw ternary op
-drawTernaryOpNode :: proc(node: Node) {//, data: ^TernaryOpData, format: ^TernaryOpFormat) {
+drawTernaryOpNode :: proc(node: ^Node) {//, data: ^TernaryOpData, format: ^TernaryOpFormat) {
 	rl.DrawRectangleRounded({node.pos.x, node.pos.y, node.size.x, node.size.y}, 0.2, 1, {90,90,90,255})
 	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+2, node.size.x-4, node.size.y-4}, 0.2, 1, {255,60,0,255})
 	rl.DrawRectangleRounded({node.pos.x+2, node.pos.y+47, node.size.x-4, node.size.y-49}, 0.2, 1, {60,60,60,255})

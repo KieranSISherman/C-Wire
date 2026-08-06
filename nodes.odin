@@ -76,7 +76,7 @@ stringToNodeType :: proc(type: string) -> NodeType {
    Node creation
 */
 
-drawNode :: proc(node: Node) {
+drawNode :: proc(node: ^Node) {
 	switch node.nodeType {
 		case .NONE: return
 		case .NEWVAR:

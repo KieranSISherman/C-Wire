@@ -18,6 +18,7 @@ App :: struct {
 	camera: rl.Camera2D,
 	sidebar: Sidebar,
 	nodes: NodeLayers,
+	wires: [dynamic]Wire,
 	mouse: Mouse,
 	keyboard: Keyboard,
 }
@@ -47,12 +48,15 @@ draw :: proc(app: ^App) {
 	
 	rl.BeginMode2D(app.camera)
 	rl.ClearBackground({40,40,40,255})
-	
-	for n in app.nodes.bottom {
-		drawNode(n)
+
+	for &w in app.wires {
+		drawWire(&w)
 	}
-	for n in app.nodes.top {
-		drawNode(n)
+	for &n in app.nodes.bottom {
+		drawNode(&n)
+	}
+	for &n in app.nodes.top {
+		drawNode(&n)
 	}
 	if app.sidebar.show {drawSidebar(app)}
 
@@ -119,7 +123,8 @@ main :: proc() {
 				dragging = false,
 				cornerDelta = {0, 0},
 				value = nil,
-			}
+			},
+			wireConns = {nil, nil},
 		},
 		keyboard = {
 			timeWait = 0,
@@ -183,6 +188,7 @@ main :: proc() {
 	for &n in app.nodes.bottom {freeNode(&n)}
 	delete(app.nodes.top)
 	delete(app.nodes.bottom)
+	delete(app.wires)
 
 	delete(app.sidebar.createSearch)
 	delete(importedTypes)

@@ -19,6 +19,7 @@ Mouse :: struct {
 	delta: rl.Vector2,
 	pos: rl.Vector2,
 	selected: Selection,
+	wireConns: [2]^Connection,
 }
 
 mouseEvents :: proc(app: ^App) {
@@ -104,19 +105,28 @@ leftClick :: proc(app: ^App) {
 	selected := &app.mouse.selected
 	app.sidebar.show = false
 	selected.value, selected.cornerDelta = getSelected(app)
-	fmt.println(selected)
+	//fmt.println(selected)
 
 	if node, ok := selected.value.(^Node); ok {
-		node.selectedEl = getSelectedElement(node, app.mouse.pos)
-		fmt.println(node.selectedEl)
-		clickUpdate(node, app)
+		conn: ^Connection = nil
+		node.selectedEl, conn = getSelectedElement(node, app.mouse.pos)
+		//fmt.println(node.selectedEl)
+
+		if conn != nil {
+			fmt.println(conn.name)
+			clickUpdate(conn, app)
+		}
+		else {
+			fmt.println(node.selectedEl)
+			clickUpdate(node, app)
+		}
 	}
 }
 
 rightClick :: proc(app: ^App) {
 	selected := &app.mouse.selected
 	selected.value, selected.cornerDelta = getSelected(app)
-	fmt.println(selected.value)
+	//fmt.println(selected.value)
 	if selected.value == nil {
 		// Show menu to create new node
 		app.sidebar.show = true
@@ -226,6 +236,37 @@ mouseEvents :: proc(app: ^App) {
 clickUpdate :: proc {
 	clickUpdateNode,
 	clickUpdateWire,
+	clickUpdateConn,
+}
+
+clickUpdateConn :: proc(conn: ^Connection, app: ^App) {
+	if node, ok := app.mouse.selected.value.(^Node); !ok {return}
+	nodeConns: ^[dynamic]Connection = &app.mouse.selected.value.(^Node).conns
+
+	if app.mouse.wireConns[0] == nil {
+		app.mouse.wireConns[0] = conn
+	}
+	else if app.mouse.wireConns[0] != nil && app.mouse.wireConns[1] == nil {
+		if !inSameNode(conn, app.mouse.wireConns[0], nodeConns) {
+			app.mouse.wireConns[1] = conn
+			createWire(app)
+			app.mouse.wireConns[0] = nil
+			app.mouse.wireConns[1] = nil
+		}
+	}
+	else {
+		app.mouse.wireConns[0] = nil
+		app.mouse.wireConns[1] = nil
+	}
+}
+
+inSameNode :: proc(conn1: ^Connection, conn2: ^Connection, nodeConns: ^[dynamic]Connection) -> bool{
+	found: i32 = 0
+	for &c in nodeConns {
+		if &c == conn1 || &c == conn2 {found += 1}
+	}
+	if found == 2 {return true}
+	return false
 }
 
 clickUpdateWire :: proc(wire: ^Wire, app: ^App) {
@@ -233,7 +274,6 @@ clickUpdateWire :: proc(wire: ^Wire, app: ^App) {
 }
 
 clickUpdateNode :: proc(node: ^Node, app: ^App) {
-	fmt.println("Node Click Update")
 	app := app
 	node := node
 	//if _, ok := app.mouse.selected.value.(^Node); !ok {return}
@@ -320,19 +360,27 @@ getSelected :: proc(app: ^App) -> (SelectionType, rl.Vector2) {
 	return nil, {0,0}
 }
 
-getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
+getSelectedElement :: proc(node: ^Node, mouse: rl.Vector2) -> (string, ^Connection) {
 	#partial switch node.nodeType {
 	case .NEWVAR:
-		return getSelectedVarElement(node, mouse)
+		el := getSelectedVarElement(node, mouse)
+		if el == "None" {return el, inConnElement(node.pos, node.conns, mouse)}
+		return el, nil
+
 	case .UNARYOP:
-		return getSelectedUnaryOpElement(node, mouse)
+		el := getSelectedUnaryOpElement(node, mouse)
+		if el == "None" {return el, inConnElement(node.pos, node.conns, mouse)}
+		return el, nil
+
 	case .BINARYOP:
-		return getSelectedBinaryOpElement(node, mouse)
+		el := getSelectedBinaryOpElement(node, mouse)
+		if el == "None" {return el, inConnElement(node.pos, node.conns, mouse)}
+		return el, nil
+
 	case .TERNARYOP:
-		//return getSelectedTernaryOpElement(node, mouse)
-		return inConnElement(node.pos, node.conns, mouse)
+		return "None", inConnElement(node.pos, node.conns, mouse)
 	}
-	return "None"
+	return "None", nil
 }
 
 getSelectedVarElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
@@ -346,16 +394,8 @@ getSelectedVarElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.array, mouse) {return "varArray"}
 
 	if inElement(node.pos, format.arrayLen, mouse) {return "varArrayLen"}
-	/*
-	if inElement(node.pos, format.topConn, mouse) {return "varTopConn"}
-	if inElement(node.pos, format.leftConn, mouse) {return "varLeftConn"}
-	if inElement(node.pos, format.bottomConn, mouse) {return "varBottomConn"}
-	//if inElement(node.pos, format.rightConn, mouse) {return "varRightConn"}
-	if inElement(node.pos, format.nextConn, mouse) {return "varNextConn"}
-	*/
-	return inConnElement(node.pos, node.conns, mouse) // defaults to "None"
 
-	//return "None"
+	return "None"
 }
 
 getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
@@ -366,20 +406,13 @@ getSelectedUnaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	if inElement(node.pos, format.bottomConn, mouse) {return "unBottomConn"}
 	if inElement(node.pos, format.nextConn, mouse) {return "unNextConn"}
 
-	return inConnElement(node.pos, node.conns, mouse)
+	return "None"
 }
 
 getSelectedBinaryOpElement :: proc(node: ^Node, mouse: rl.Vector2) -> string {
 	format := cast(^BinaryOpFormat)node.format
 	if inElement(node.pos, format.operation, mouse) {return "binOp"}
-	/*
-	if inElement(node.pos, format.topConn, mouse) {return "binTopConn"}
-	if inElement(node.pos, format.leftConn, mouse) {return "binLeftConn"}
-	if inElement(node.pos, format.botLeftConn, mouse) {return "binBotLeftConn"}
-	if inElement(node.pos, format.botRightConn, mouse) {return "binBotRightConn"}
-	if inElement(node.pos, format.nextConn, mouse) {return "binNextConn"}
-	*/
-	return inConnElement(node.pos, node.conns, mouse)
+	return "None"
 }
 
 /*
@@ -403,14 +436,14 @@ inElement :: proc(point: rl.Vector2, el: rl.Rectangle, mouse: rl.Vector2) -> boo
 	return false
 }
 
-inConnElement :: proc(point: rl.Vector2, conns: [dynamic]Connection, mouse: rl.Vector2) -> string {
-	for conn in conns {
+inConnElement :: proc(point: rl.Vector2, conns: [dynamic]Connection, mouse: rl.Vector2) -> ^Connection {
+	for &conn in conns {
 		rec := conn.format
 		rec.x += point.x
 		rec.y += point.y
-		if rl.CheckCollisionPointRec(mouse, rec) {return conn.name}
+		if rl.CheckCollisionPointRec(mouse, rec) {return &conn}
 	}
-	return "None"
+	return nil
 }
 
 removeVarMod :: proc(app: ^App) {
